@@ -44,6 +44,10 @@ export const api = {
   drag: (ids: string[]) => call<void>('shelf_start_drag', { ids }),
   open: (id: string, inFolder = false) => call<void>('shelf_open', { id, inFolder }),
   clean: (id: string, action: string) => call<string>('shelf_clean', { id, action }),
+  /** Copies text without adding it to clipboard history. */
+  clipWriteText: (text: string) => call<void>('clip_write_text', { text }),
+  /** Opens a web, mailto: or tel: link. Anything else is refused natively. */
+  clipOpenUrl: (url: string) => call<void>('clip_open_url', { url }),
   stacks: () => call<Stack[]>('stacks_list'),
   addStack: (name: string) => call<Stack[]>('stack_add', { name }),
   removeStack: (id: string) => call<Stack[]>('stack_remove', { id }),
