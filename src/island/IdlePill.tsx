@@ -3,8 +3,9 @@ import { api, asset, formatClock } from '../lib/api';
 import { task, useApp } from '../app/store';
 import { IsleMark } from '../ui/IsleMark';
 import { ProgressRing } from '../ui/primitives';
+import { ContextChip, useActivity } from '../modules/context/ContextChip';
 
-/** What the pill shows while collapsed: idle wordmark, a peek notice, the timer or media. */
+/** What the pill shows while collapsed: idle wordmark, a peek notice, the timer, your current activity or media. */
 export function IdlePill({
   reduced,
   paused,
@@ -23,6 +24,8 @@ export function IdlePill({
   close: () => void;
 }) {
   const { island, data, patch } = useApp();
+  const activity = useActivity((s) => s.current);
+  const showActivity = !!activity && !privateMode && !!data?.settings.context_pill;
   return (
     <motion.div
       key="idle"
@@ -95,6 +98,8 @@ export function IdlePill({
             value={data.timer.remaining_seconds / data.timer.duration_seconds}
           />
         </>
+      ) : showActivity && activity ? (
+        <ContextChip info={activity} />
       ) : !privateMode && data?.media.playing ? (
         <>
           <span className="isle-wordmark">isle</span>

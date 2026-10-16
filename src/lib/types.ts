@@ -24,7 +24,14 @@ export interface FeatureSettings {
   hover_expand: boolean;
   launch_at_startup: boolean;
   hotkeys: Record<string, string>;
+  // Context-aware pill, pill themes and widgets.
+  context_pill: boolean;
+  pill_theme: PillTheme;
+  weather_enabled: boolean;
+  weather_place: string;
+  weather_fahrenheit: boolean;
 }
+export type PillTheme = 'tide' | 'still' | 'aurora' | 'outline';
 export interface ShelfItem {
   id: string;
   kind: 'file' | 'image' | 'text' | 'link';
@@ -125,4 +132,5 @@ export interface DictionaryResult {
     meanings: { partOfSpeech: string; definitions: Definition[]; synonyms?: string[] }[];
   }[];
 }
-export type Tab = 'shelf' | 'usage' | 'dictionary' | 'focus' | 'media' | 'notes' | 'settings';
+export type Tab =
+  'shelf' | 'usage' | 'dictionary' | 'focus' | 'media' | 'notes' | 'widgets' | 'settings';

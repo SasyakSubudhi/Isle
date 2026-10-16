@@ -40,6 +40,7 @@ const paths = {
   save: 'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',
   power: 'M12 3v8 M6.3 6.8a8 8 0 1 0 11.4 0',
   dock: 'M4 14h4l2 3h4l2-3h4v6H4z M12 3v9 M8.5 8.5L12 12l3.5-3.5',
+  widgets: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z',
 } satisfies Record<string, string>;
 export type IconName = keyof typeof paths;
 export function Icon({

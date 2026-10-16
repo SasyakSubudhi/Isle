@@ -12,6 +12,7 @@ import { tabs } from './islandTabs';
 import { useIsleEvents } from './useIsleEvents';
 import { DockBadge, DockDrop, DockTray } from '../modules/dock/DockViews';
 import { useDock, useDockEvents } from '../modules/dock/dock';
+import { useActivityFeed } from '../modules/context/ContextChip';
 
 export function IslandShell() {
   const { island, data, dispatch, notify, refreshShelf } = useApp();
@@ -108,6 +109,7 @@ export function IslandShell() {
   useDockEvents(() => {
     if (!useApp.getState().data?.settings.presentation_mode) dispatch({ type: 'dock' });
   });
+  useActivityFeed(!!data?.settings.context_pill && !privateMode);
   const report = () => {
     if (!nativeAvailable || !shell.current) return;
     const r = shell.current.getBoundingClientRect();
@@ -181,6 +183,7 @@ export function IslandShell() {
     <main
       className="island-canvas select-none"
       data-theme={theme}
+      data-pill-theme={data?.settings.pill_theme ?? 'tide'}
       data-motion-paused={paused || reduced}
     >
       <motion.div
