@@ -13,7 +13,7 @@ const paths={
  privacy:'M3 3l18 18 M10 5a11 11 0 0 1 11 7l-3 4 M14 19a11 11 0 0 1-11-7l3-4 M10 10a3 3 0 0 0 4 4',
  play:'M8 4l12 8-12 8z',pause:'M8 5v14 M16 5v14',next:'M5 5l10 7-10 7z M19 5v14',previous:'M19 5L9 12l10 7z M5 5v14',volume:'M3 9h4l5-4v14l-5-4H3z M16 8a6 6 0 0 1 0 8',
  mail:'M3 5h18v14H3z M3 5l9 8 9-8',chat:'M4 4h16v13H9l-5 4z M8 8h8 M8 12h5',chrome:'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M12 3l5 9 M4 7h10 M7 20l5-8',
- spark:'M12 3l2 6 7 3-7 2-2 7-2-7-7-2 7-3z',expand:'M9 3H3v6 M15 3h6v6 M21 15v6h-6 M3 15v6h6',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',
+ spark:'M12 3l2 6 7 3-7 2-2 7-2-7-7-2 7-3z',expand:'M9 3H3v6 M15 3h6v6 M21 15v6h-6 M3 15v6h6',save:'M5 3h12l3 3v15H4V3z M8 3v6h8V3 M8 21v-7h8v7',power:'M12 3v8 M6.3 6.8a8 8 0 1 0 11.4 0',
 } satisfies Record<string,string>;
 export type IconName=keyof typeof paths;
 export function Icon({name,size=18,...props}:SVGProps<SVGSVGElement>&{name:IconName;size?:number}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}><path d={paths[name]}/></svg>;}

@@ -38,6 +38,7 @@ export const api={
   settings:(settings:FeatureSettings)=>call<FeatureSettings>('settings_set',{settings}),
   download:(id:string,add:boolean)=>call<void>('download_action',{id,add}),
   capture:()=>call<void>('capture_start'),
+  quit:()=>call<void>('app_quit'),
   on:<T>(event:string,handler:(payload:T)=>void)=>listen<T>(event,e=>handler(e.payload)),
   onDrop:(handler:(paths:string[])=>void,onHover:(active:boolean)=>void)=>getCurrentWebviewWindow().onDragDropEvent(e=>{
     if(e.payload.type==='drop'){onHover(false);handler(e.payload.paths);}

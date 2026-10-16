@@ -124,6 +124,11 @@ pub fn open_position_menu(
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+pub fn app_quit(app: AppHandle) {
+    app.exit(0);
+}
+
 pub fn handle_menu(app: &AppHandle, id: &str) {
     if id == "quit" {
         app.exit(0);
