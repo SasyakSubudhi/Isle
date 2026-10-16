@@ -1,50 +1,497 @@
-import { useEffect,useRef,useState } from 'react';
-import { api,asset,fileSize } from '../../lib/api';
-import { task,useApp } from '../../app/store';
+import { useEffect, useRef, useState } from 'react';
+import { api, asset, fileSize } from '../../lib/api';
+import { task, useApp } from '../../app/store';
 import type { ShelfItem } from '../../lib/types';
 import { Icon } from '../../ui/Icon';
-import { Empty,IconButton,ProgressRing } from '../../ui/primitives';
+import { Empty, IconButton, ProgressRing } from '../../ui/primitives';
 
-function ShelfTile({item,onDetails}:{item:ShelfItem;onDetails:()=>void}){
-  const dispatch=useApp(s=>s.dispatch);const dragged=useRef(false);const [copied,setCopied]=useState(false);
-  const begin=(event:React.PointerEvent)=>{
-    if(event.button!==0||!item.path)return;const {clientX:x,clientY:y}=event;dragged.current=false;
-    const move=(e:PointerEvent)=>{if(Math.hypot(e.clientX-x,e.clientY-y)>7){window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);dragged.current=true;dispatch({type:'drag',active:true});void task(()=>api.drag([item.id])).finally(()=>{dispatch({type:'drag',active:false});setTimeout(()=>{dragged.current=false;},150);});}};
-    const up=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);};window.addEventListener('pointermove',move);window.addEventListener('pointerup',up,{once:true});
+function ShelfTile({ item, onDetails }: { item: ShelfItem; onDetails: () => void }) {
+  const dispatch = useApp((s) => s.dispatch);
+  const dragged = useRef(false);
+  const [copied, setCopied] = useState(false);
+  const begin = (event: React.PointerEvent) => {
+    if (event.button !== 0 || !item.path) return;
+    const { clientX: x, clientY: y } = event;
+    dragged.current = false;
+    const move = (e: PointerEvent) => {
+      if (Math.hypot(e.clientX - x, e.clientY - y) > 7) {
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        dragged.current = true;
+        dispatch({ type: 'drag', active: true });
+        void task(() => api.drag([item.id])).finally(() => {
+          dispatch({ type: 'drag', active: false });
+          setTimeout(() => {
+            dragged.current = false;
+          }, 150);
+        });
+      }
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up, { once: true });
   };
-  const copy=()=>{if(dragged.current)return;void task(()=>api.copy([item.id])).then(result=>{if(result!==undefined||!useApp.getState().toast?.error){setCopied(true);setTimeout(()=>setCopied(false),1200);}});};
-  return <div className={`shelf-tile ${item.missing?'missing':''}`} onContextMenu={e=>{e.preventDefault();onDetails();}}>
-    <button className="tile-main" type="button" onPointerDown={begin} draggable={!!item.content}
-      onDragStart={e=>{if(item.content){e.dataTransfer.setData('text/plain',item.content);if(item.kind==='link')e.dataTransfer.setData('text/uri-list',item.content);}else e.preventDefault();}}
-      onClick={copy} title={item.missing?'Original file is missing':`Copy ${item.name}. Drag files to attach them.`}>
-      <span className="file-art">{item.thumbnail?<img src={asset(item.thumbnail)} alt=""/>:<Icon name={item.kind==='text'?'notes':item.kind==='link'?'link':'file'} size={22}/>}</span>
-      <span className="file-label"><strong>{item.name}</strong><small>{copied?'Copied':item.missing?'Original missing':item.kind==='text'||item.kind==='link'?item.kind:fileSize(item.size)}</small></span>
-    </button>
-    <span className="tile-end">{item.pinned?<Icon name="pin" size={12}/>:item.expires_at?<ProgressRing size={15} value={(item.expires_at-Date.now())/Math.max(1,item.expires_at-item.created_at)}/>:null}<IconButton icon="more" label={`Actions for ${item.name}`} onClick={onDetails}/></span>
-  </div>;
+  const copy = () => {
+    if (dragged.current) return;
+    void task(() => api.copy([item.id])).then((result) => {
+      if (result !== undefined || !useApp.getState().toast?.error) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      }
+    });
+  };
+  return (
+    <div
+      className={`shelf-tile ${item.missing ? 'missing' : ''}`}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        onDetails();
+      }}
+    >
+      <button
+        className="tile-main"
+        type="button"
+        onPointerDown={begin}
+        draggable={!!item.content}
+        onDragStart={(e) => {
+          if (item.content) {
+            e.dataTransfer.setData('text/plain', item.content);
+            if (item.kind === 'link') e.dataTransfer.setData('text/uri-list', item.content);
+          } else e.preventDefault();
+        }}
+        onClick={copy}
+        title={
+          item.missing
+            ? 'Original file is missing'
+            : `Copy ${item.name}. Drag files to attach them.`
+        }
+      >
+        <span className="file-art">
+          {item.thumbnail ? (
+            <img src={asset(item.thumbnail)} alt="" />
+          ) : (
+            <Icon
+              name={item.kind === 'text' ? 'notes' : item.kind === 'link' ? 'link' : 'file'}
+              size={22}
+            />
+          )}
+        </span>
+        <span className="file-label">
+          <strong>{item.name}</strong>
+          <small>
+            {copied
+              ? 'Copied'
+              : item.missing
+                ? 'Original missing'
+                : item.kind === 'text' || item.kind === 'link'
+                  ? item.kind
+                  : fileSize(item.size)}
+          </small>
+        </span>
+      </button>
+      <span className="tile-end">
+        {item.pinned ? (
+          <Icon name="pin" size={12} />
+        ) : item.expires_at ? (
+          <ProgressRing
+            size={15}
+            value={(item.expires_at - Date.now()) / Math.max(1, item.expires_at - item.created_at)}
+          />
+        ) : null}
+        <IconButton icon="more" label={`Actions for ${item.name}`} onClick={onDetails} />
+      </span>
+    </div>
+  );
 }
-export function ShelfView(){
-  const data=useApp(s=>s.data)!;const refresh=useApp(s=>s.refreshShelf);const patch=useApp(s=>s.patch);const [history,setHistory]=useState(false);const [stack,setStack]=useState('');const [details,setDetails]=useState<string|null>(null);const [text,setText]=useState('');const [composer,setComposer]=useState(false);const [stackName,setStackName]=useState('');const [addingStack,setAddingStack]=useState(false);const [preview,setPreview]=useState<string|null>(null);const [label,setLabel]=useState('');
-  const selected=data.shelf.find(i=>i.id===details);const items=data.shelf.filter(i=>i.history===history&&(!stack||i.stack_id===stack));
-  useEffect(()=>{if(selected)setLabel(selected.name);setPreview(null);},[selected?.id]);
-  const mutate=async(action:()=>Promise<unknown>,message?:string)=>{const result=await task(action,message);if(result===undefined)return false;await refresh();return true;};
-  if(selected)return <section className="feature shelf-detail">
-    <div className="toolbar"><button className="text-button" onClick={()=>setDetails(null)}><Icon name="arrow" size={14}/>Back to {history?'history':'Shelf'}</button><span className="spacer"/><small>{selected.cache_owned?'Cached copy':'Original reference'}</small></div>
-    <input value={label} onChange={e=>setLabel(e.target.value)} aria-label="Item label" onBlur={()=>{if(label!==selected.name)void mutate(()=>api.update(selected.id,{name:label}));}}/>
-    <p className="detail-path">{selected.path??selected.content}</p>
-    <div className="action-row"><button onClick={()=>void mutate(()=>api.copy([selected.id]),'Copied to clipboard')}><Icon name="copy"/>Copy</button>{(selected.path||selected.kind==='link')&&<button onClick={()=>void task(()=>api.open(selected.id))}><Icon name="folder"/>Open</button>}{selected.path&&<IconButton icon="folder" label="Show in folder" onClick={()=>void task(()=>api.open(selected.id,true))}/>}<button onClick={()=>void mutate(()=>api.update(selected.id,{pinned:!selected.pinned,promote:selected.history}))}><Icon name="pin"/>{selected.history?'Keep on Shelf':selected.pinned?'Unpin':'Pin'}</button></div>
-    <div className="inline-field"><label htmlFor="item-stack">Stack</label><select id="item-stack" value={selected.stack_id??''} onChange={e=>void mutate(()=>api.update(selected.id,{stack:e.target.value}))}><option value="">Ungrouped</option>{data.stacks.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-    {selected.content&&<><div className="action-row"><button onClick={()=>void task(()=>api.clean(selected.id,'plain')).then(v=>{if(v!==undefined)setPreview(v);})}>Plain text</button><button onClick={()=>void task(()=>api.clean(selected.id,'lines')).then(v=>{if(v!==undefined)setPreview(v);})}>Fix line breaks</button>{selected.kind==='link'&&<button onClick={()=>void task(()=>api.clean(selected.id,'tracking')).then(v=>{if(v!==undefined)setPreview(v);})}>Clean link</button>}</div>{preview!==null&&<div className="cleanup-preview"><p>{preview}</p><button onClick={()=>void mutate(()=>api.addText(preview),'Cleaned copy added').then(ok=>{if(ok)setDetails(null);})}>Keep cleaned copy</button><small>The original stays on your Shelf.</small></div>}</>}
-    <div className="action-row"><button className="danger text-button" onClick={()=>void mutate(()=>api.remove(selected.id)).then(ok=>{if(ok)setDetails(null);})}><Icon name="trash" size={14}/>Remove from Shelf</button>{selected.cache_owned&&<button className="danger text-button" onClick={()=>void mutate(()=>api.remove(selected.id,true)).then(ok=>{if(ok)setDetails(null);})}>Remove & delete cache</button>}</div>
-  </section>;
-  return <section className="feature shelf-view">
-    <div className="toolbar"><div className="small-segment"><button aria-pressed={!history} onClick={()=>{setHistory(false);setStack('');}}>Shelf</button><button aria-pressed={history} onClick={()=>{setHistory(true);setStack('');}}>History</button></div><span className="spacer"/><IconButton icon="capture" label="Take a screenshot into Shelf" onClick={()=>void task(api.capture)}/><IconButton icon="plus" label="Add text or link" onClick={()=>setComposer(v=>!v)}/><button className="compact-button" onClick={()=>void mutate(api.paste,'Added from clipboard')}><Icon name="clipboard" size={14}/>Paste</button></div>
-    {history&&!data.settings.clipboard_history&&<div className="permission-note"><Icon name="privacy"/><div><strong>Clipboard history is off</strong><p>Enable it to keep future copies here, locally.</p></div><button onClick={()=>void task(()=>api.settingsPatch({clipboard_history:true})).then(settings=>{if(settings)patch({settings});})}>Enable</button></div>}
-    {composer&&<form className="inline-compose" onSubmit={e=>{e.preventDefault();void mutate(()=>api.addText(text),'Added to Shelf').then(ok=>{if(ok){setText('');setComposer(false);}});}}><input autoFocus placeholder="Paste text or a link…" aria-label="Text or link" value={text} onChange={e=>setText(e.target.value)}/><button disabled={!text.trim()}>Add</button></form>}
-    {!history&&<div className="stack-row"><select aria-label="Filter Shelf by stack" value={stack} onChange={e=>setStack(e.target.value)}><option value="">All items</option>{data.stacks.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select><IconButton icon="plus" label="Create stack" onClick={()=>setAddingStack(v=>!v)}/>{stack&&<><button className="text-button" onClick={()=>void task(()=>api.copy(items.filter(i=>i.path).map(i=>i.id)),'Files copied')}>Copy files</button><button className="text-button" onPointerDown={()=>{const ids=items.filter(i=>i.path).map(i=>i.id);if(ids.length){useApp.getState().dispatch({type:'drag',active:true});void task(()=>api.drag(ids)).finally(()=>useApp.getState().dispatch({type:'drag',active:false}));}}}>Drag files</button><IconButton icon="trash" label="Remove stack, keep its items" onClick={()=>void task(()=>api.removeStack(stack)).then(stacks=>{if(stacks){patch({stacks});setStack('');void refresh();}})}/></>}</div>}
-    {addingStack&&<form className="inline-compose" onSubmit={e=>{e.preventDefault();void task(()=>api.addStack(stackName)).then(stacks=>{if(stacks){patch({stacks});setAddingStack(false);setStackName('');}});}}><input autoFocus value={stackName} onChange={e=>setStackName(e.target.value)} placeholder="Stack name" aria-label="Stack name"/><button disabled={!stackName.trim()}>Create</button></form>}
-    {stack&&items.some(i=>!i.path)&&<small className="muted">Stack drag/copy includes files. Text and links copy individually.</small>}
-    {data.downloads.length>0&&!history&&<div className="download-proposal"><Icon name="file"/><span><strong>{data.downloads[0].name}</strong><small>New download · add it?</small></span><button onClick={()=>void task(()=>api.download(data.downloads[0].id,true)).then(async ok=>{if(!ok)return;const next=await api.bootstrap();patch({downloads:next.downloads,shelf:next.shelf});})}>Add</button><IconButton icon="close" label="Dismiss download" onClick={()=>void task(()=>api.download(data.downloads[0].id,false)).then(ok=>{if(ok)patch({downloads:data.downloads.slice(1)});})}/></div>}
-    {items.length?<div className="shelf-grid">{items.map(item=><ShelfTile key={item.id} item={item} onDetails={()=>setDetails(item.id)}/>)}</div>:(data.downloads.length>0&&!history)||history&&!data.settings.clipboard_history?<p className="shelf-empty-inline">{history?'Your future copies appear here after enabling history.':'Shelf is empty. Add the download above, or drop files here.'}</p>:<Empty icon={history?'clipboard':'shelf'} title={history?'Your next copy lands here':'A little space for what’s next'}>{history?'Enable clipboard history above, or paste an item onto Shelf.':'Drop files here, paste a link, or take a screenshot. Drag files back out whenever you need them.'}</Empty>}
-  </section>;
+export function ShelfView() {
+  const data = useApp((s) => s.data)!;
+  const refresh = useApp((s) => s.refreshShelf);
+  const patch = useApp((s) => s.patch);
+  const [history, setHistory] = useState(false);
+  const [stack, setStack] = useState('');
+  const [details, setDetails] = useState<string | null>(null);
+  const [text, setText] = useState('');
+  const [composer, setComposer] = useState(false);
+  const [stackName, setStackName] = useState('');
+  const [addingStack, setAddingStack] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [label, setLabel] = useState('');
+  const selected = data.shelf.find((i) => i.id === details);
+  const items = data.shelf.filter((i) => i.history === history && (!stack || i.stack_id === stack));
+  useEffect(() => {
+    if (selected) setLabel(selected.name);
+    setPreview(null);
+  }, [selected?.id]);
+  const mutate = async (action: () => Promise<unknown>, message?: string) => {
+    const result = await task(action, message);
+    if (result === undefined) return false;
+    await refresh();
+    return true;
+  };
+  if (selected)
+    return (
+      <section className="feature shelf-detail">
+        <div className="toolbar">
+          <button className="text-button" onClick={() => setDetails(null)}>
+            <Icon name="arrow" size={14} />
+            Back to {history ? 'history' : 'Shelf'}
+          </button>
+          <span className="spacer" />
+          <small>{selected.cache_owned ? 'Cached copy' : 'Original reference'}</small>
+        </div>
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          aria-label="Item label"
+          onBlur={() => {
+            if (label !== selected.name)
+              void mutate(() => api.update(selected.id, { name: label }));
+          }}
+        />
+        <p className="detail-path">{selected.path ?? selected.content}</p>
+        <div className="action-row">
+          <button onClick={() => void mutate(() => api.copy([selected.id]), 'Copied to clipboard')}>
+            <Icon name="copy" />
+            Copy
+          </button>
+          {(selected.path || selected.kind === 'link') && (
+            <button onClick={() => void task(() => api.open(selected.id))}>
+              <Icon name="folder" />
+              Open
+            </button>
+          )}
+          {selected.path && (
+            <IconButton
+              icon="folder"
+              label="Show in folder"
+              onClick={() => void task(() => api.open(selected.id, true))}
+            />
+          )}
+          <button
+            onClick={() =>
+              void mutate(() =>
+                api.update(selected.id, { pinned: !selected.pinned, promote: selected.history }),
+              )
+            }
+          >
+            <Icon name="pin" />
+            {selected.history ? 'Keep on Shelf' : selected.pinned ? 'Unpin' : 'Pin'}
+          </button>
+        </div>
+        <div className="inline-field">
+          <label htmlFor="item-stack">Stack</label>
+          <select
+            id="item-stack"
+            value={selected.stack_id ?? ''}
+            onChange={(e) => void mutate(() => api.update(selected.id, { stack: e.target.value }))}
+          >
+            <option value="">Ungrouped</option>
+            {data.stacks.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selected.content && (
+          <>
+            <div className="action-row">
+              <button
+                onClick={() =>
+                  void task(() => api.clean(selected.id, 'plain')).then((v) => {
+                    if (v !== undefined) setPreview(v);
+                  })
+                }
+              >
+                Plain text
+              </button>
+              <button
+                onClick={() =>
+                  void task(() => api.clean(selected.id, 'lines')).then((v) => {
+                    if (v !== undefined) setPreview(v);
+                  })
+                }
+              >
+                Fix line breaks
+              </button>
+              {selected.kind === 'link' && (
+                <button
+                  onClick={() =>
+                    void task(() => api.clean(selected.id, 'tracking')).then((v) => {
+                      if (v !== undefined) setPreview(v);
+                    })
+                  }
+                >
+                  Clean link
+                </button>
+              )}
+            </div>
+            {preview !== null && (
+              <div className="cleanup-preview">
+                <p>{preview}</p>
+                <button
+                  onClick={() =>
+                    void mutate(() => api.addText(preview), 'Cleaned copy added').then((ok) => {
+                      if (ok) setDetails(null);
+                    })
+                  }
+                >
+                  Keep cleaned copy
+                </button>
+                <small>The original stays on your Shelf.</small>
+              </div>
+            )}
+          </>
+        )}
+        <div className="action-row">
+          <button
+            className="danger text-button"
+            onClick={() =>
+              void mutate(() => api.remove(selected.id)).then((ok) => {
+                if (ok) setDetails(null);
+              })
+            }
+          >
+            <Icon name="trash" size={14} />
+            Remove from Shelf
+          </button>
+          {selected.cache_owned && (
+            <button
+              className="danger text-button"
+              onClick={() =>
+                void mutate(() => api.remove(selected.id, true)).then((ok) => {
+                  if (ok) setDetails(null);
+                })
+              }
+            >
+              Remove & delete cache
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  return (
+    <section className="feature shelf-view">
+      <div className="toolbar">
+        <div className="small-segment">
+          <button
+            aria-pressed={!history}
+            onClick={() => {
+              setHistory(false);
+              setStack('');
+            }}
+          >
+            Shelf
+          </button>
+          <button
+            aria-pressed={history}
+            onClick={() => {
+              setHistory(true);
+              setStack('');
+            }}
+          >
+            History
+          </button>
+        </div>
+        <span className="spacer" />
+        <IconButton
+          icon="capture"
+          label="Take a screenshot into Shelf"
+          onClick={() => void task(api.capture)}
+        />
+        <IconButton icon="plus" label="Add text or link" onClick={() => setComposer((v) => !v)} />
+        <button
+          className="compact-button"
+          onClick={() => void mutate(api.paste, 'Added from clipboard')}
+        >
+          <Icon name="clipboard" size={14} />
+          Paste
+        </button>
+      </div>
+      {history && !data.settings.clipboard_history && (
+        <div className="permission-note">
+          <Icon name="privacy" />
+          <div>
+            <strong>Clipboard history is off</strong>
+            <p>Enable it to keep future copies here, locally.</p>
+          </div>
+          <button
+            onClick={() =>
+              void task(() => api.settingsPatch({ clipboard_history: true })).then((settings) => {
+                if (settings) patch({ settings });
+              })
+            }
+          >
+            Enable
+          </button>
+        </div>
+      )}
+      {composer && (
+        <form
+          className="inline-compose"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void mutate(() => api.addText(text), 'Added to Shelf').then((ok) => {
+              if (ok) {
+                setText('');
+                setComposer(false);
+              }
+            });
+          }}
+        >
+          <input
+            autoFocus
+            placeholder="Paste text or a link…"
+            aria-label="Text or link"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button disabled={!text.trim()}>Add</button>
+        </form>
+      )}
+      {!history && (
+        <div className="stack-row">
+          <select
+            aria-label="Filter Shelf by stack"
+            value={stack}
+            onChange={(e) => setStack(e.target.value)}
+          >
+            <option value="">All items</option>
+            {data.stacks.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          <IconButton icon="plus" label="Create stack" onClick={() => setAddingStack((v) => !v)} />
+          {stack && (
+            <>
+              <button
+                className="text-button"
+                onClick={() =>
+                  void task(
+                    () => api.copy(items.filter((i) => i.path).map((i) => i.id)),
+                    'Files copied',
+                  )
+                }
+              >
+                Copy files
+              </button>
+              <button
+                className="text-button"
+                onPointerDown={() => {
+                  const ids = items.filter((i) => i.path).map((i) => i.id);
+                  if (ids.length) {
+                    useApp.getState().dispatch({ type: 'drag', active: true });
+                    void task(() => api.drag(ids)).finally(() =>
+                      useApp.getState().dispatch({ type: 'drag', active: false }),
+                    );
+                  }
+                }}
+              >
+                Drag files
+              </button>
+              <IconButton
+                icon="trash"
+                label="Remove stack, keep its items"
+                onClick={() =>
+                  void task(() => api.removeStack(stack)).then((stacks) => {
+                    if (stacks) {
+                      patch({ stacks });
+                      setStack('');
+                      void refresh();
+                    }
+                  })
+                }
+              />
+            </>
+          )}
+        </div>
+      )}
+      {addingStack && (
+        <form
+          className="inline-compose"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void task(() => api.addStack(stackName)).then((stacks) => {
+              if (stacks) {
+                patch({ stacks });
+                setAddingStack(false);
+                setStackName('');
+              }
+            });
+          }}
+        >
+          <input
+            autoFocus
+            value={stackName}
+            onChange={(e) => setStackName(e.target.value)}
+            placeholder="Stack name"
+            aria-label="Stack name"
+          />
+          <button disabled={!stackName.trim()}>Create</button>
+        </form>
+      )}
+      {stack && items.some((i) => !i.path) && (
+        <small className="muted">
+          Stack drag/copy includes files. Text and links copy individually.
+        </small>
+      )}
+      {data.downloads.length > 0 && !history && (
+        <div className="download-proposal">
+          <Icon name="file" />
+          <span>
+            <strong>{data.downloads[0].name}</strong>
+            <small>New download · add it?</small>
+          </span>
+          <button
+            onClick={() =>
+              void task(() => api.download(data.downloads[0].id, true)).then(async (ok) => {
+                if (!ok) return;
+                const next = await api.bootstrap();
+                patch({ downloads: next.downloads, shelf: next.shelf });
+              })
+            }
+          >
+            Add
+          </button>
+          <IconButton
+            icon="close"
+            label="Dismiss download"
+            onClick={() =>
+              void task(() => api.download(data.downloads[0].id, false)).then((ok) => {
+                if (ok) patch({ downloads: data.downloads.slice(1) });
+              })
+            }
+          />
+        </div>
+      )}
+      {items.length ? (
+        <div className="shelf-grid">
+          {items.map((item) => (
+            <ShelfTile key={item.id} item={item} onDetails={() => setDetails(item.id)} />
+          ))}
+        </div>
+      ) : (data.downloads.length > 0 && !history) ||
+        (history && !data.settings.clipboard_history) ? (
+        <p className="shelf-empty-inline">
+          {history
+            ? 'Your future copies appear here after enabling history.'
+            : 'Shelf is empty. Add the download above, or drop files here.'}
+        </p>
+      ) : (
+        <Empty
+          icon={history ? 'clipboard' : 'shelf'}
+          title={history ? 'Your next copy lands here' : 'A little space for what’s next'}
+        >
+          {history
+            ? 'Enable clipboard history above, or paste an item onto Shelf.'
+            : 'Drop files here, paste a link, or take a screenshot. Drag files back out whenever you need them.'}
+        </Empty>
+      )}
+    </section>
+  );
 }

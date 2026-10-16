@@ -1,2 +1,18 @@
-import { Component,type ReactNode } from 'react';
-export class ErrorBoundary extends Component<{children:ReactNode},{error:string|null}>{state:{error:string|null}={error:null};static getDerivedStateFromError(error:Error){return {error:error.message};}render(){if(this.state.error)return <div className="recovery-panel"><h2>Isle needs a fresh start</h2><p>{this.state.error}</p><button onClick={()=>location.reload()}>Reload Isle</button></div>;return this.props.children;}}
+import { Component, type ReactNode } from 'react';
+export class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+  state: { error: string | null } = { error: null };
+  static getDerivedStateFromError(error: Error) {
+    return { error: error.message };
+  }
+  render() {
+    if (this.state.error)
+      return (
+        <div className="recovery-panel">
+          <h2>Isle needs a fresh start</h2>
+          <p>{this.state.error}</p>
+          <button onClick={() => location.reload()}>Reload Isle</button>
+        </div>
+      );
+    return this.props.children;
+  }
+}

@@ -7,5 +7,9 @@ import './styles/globals.css';
 import './styles/panel.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><ErrorBoundary><App /></ErrorBoundary></React.StrictMode>,
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>,
 );

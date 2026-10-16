@@ -3,8 +3,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 const source = await readFile(new URL('../src/app/islandReducer.ts', import.meta.url), 'utf8');
-const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
-const { initialIsland, reduceIsland: reduce } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`);
+const { outputText } = ts.transpileModule(source, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+});
+const { initialIsland, reduceIsland: reduce } = await import(
+  `data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`
+);
 
 test('explicit opening selects a tool and closing clears private previews and pinning', () => {
   const open = reduce(initialIsland, { type: 'open', tab: 'dictionary', pin: true });
@@ -36,7 +40,10 @@ test('switching tools preserves an explicitly pinned workspace', () => {
   assert.equal(media.pinned, true);
 });
 test('transient feedback opens a peek; toggle opens and closes the pinned workspace', () => {
-  const peek = reduce(initialIsland, { type: 'peek', notice: { title: 'Timer done', tab: 'focus' } });
+  const peek = reduce(initialIsland, {
+    type: 'peek',
+    notice: { title: 'Timer done', tab: 'focus' },
+  });
   assert.equal(peek.mode, 'peek');
   const open = reduce(peek, { type: 'toggle' });
   assert.equal(open.mode, 'expanded');
