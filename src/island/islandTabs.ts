@@ -7,6 +7,7 @@ import { FocusView } from '../modules/focus/FocusView';
 import { NowPlayingView } from '../modules/media/NowPlayingView';
 import { NotesView } from '../modules/notes/NotesView';
 import { SettingsView } from '../modules/settings/SettingsView';
+import { WidgetsView } from '../modules/widgets/WidgetsView';
 
 export const tabs: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'shelf', label: 'Shelf', icon: 'shelf' },
@@ -15,6 +16,7 @@ export const tabs: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'focus', label: 'Focus timer', icon: 'focus' },
   { id: 'media', label: 'Now Playing', icon: 'media' },
   { id: 'notes', label: 'Scratchpad', icon: 'notes' },
+  { id: 'widgets', label: 'Widgets', icon: 'widgets' },
 ];
 export const views = {
   shelf: ShelfView,
@@ -23,5 +25,6 @@ export const views = {
   focus: FocusView,
   media: NowPlayingView,
   notes: NotesView,
+  widgets: WidgetsView,
   settings: SettingsView,
 };

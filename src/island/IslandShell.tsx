@@ -10,6 +10,7 @@ import { IdlePill } from './IdlePill';
 import { Panel } from './Panel';
 import { tabs } from './islandTabs';
 import { useIsleEvents } from './useIsleEvents';
+import { useActivityFeed } from '../modules/context/ContextChip';
 
 export function IslandShell() {
   const { island, data, dispatch, notify, refreshShelf } = useApp();
@@ -87,6 +88,7 @@ export function IslandShell() {
     setNativeVisible,
     setSystemLight,
   });
+  useActivityFeed(!!data?.settings.context_pill && !privateMode);
   const report = () => {
     if (!nativeAvailable || !shell.current) return;
     const r = shell.current.getBoundingClientRect();
@@ -151,6 +153,7 @@ export function IslandShell() {
     <main
       className="island-canvas select-none"
       data-theme={theme}
+      data-pill-theme={data?.settings.pill_theme ?? 'tide'}
       data-motion-paused={paused || reduced}
     >
       <motion.div

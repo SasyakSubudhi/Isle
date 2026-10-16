@@ -110,6 +110,7 @@ pub fn start(app: AppHandle, core: Core) -> Result<(), String> {
     crate::clipboard::start(app.clone(), core.clone());
     crate::downloads::start(app.clone(), core.clone());
     crate::usage::start(app.clone(), core.clone());
+    crate::context::start(app.clone(), core.clone());
     let media = crate::media::Media::default();
     app.manage(media.clone());
     crate::media::start(app.clone(), media, core.0.cache.clone());

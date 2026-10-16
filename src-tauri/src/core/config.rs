@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fs};
 
+/// Pill looks. `tide` is the original monochrome wave and the default.
+pub const PILL_THEMES: [&str; 4] = ["tide", "still", "aurora", "outline"];
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct FeatureSettings {
@@ -29,6 +32,12 @@ pub struct FeatureSettings {
     pub hover_expand: bool,
     pub launch_at_startup: bool,
     pub hotkeys: BTreeMap<String, String>,
+    // Context-aware pill, pill themes and widgets.
+    pub context_pill: bool,
+    pub pill_theme: String,
+    pub weather_enabled: bool,
+    pub weather_place: String,
+    pub weather_fahrenheit: bool,
 }
 impl Default for FeatureSettings {
     fn default() -> Self {
@@ -67,6 +76,11 @@ impl Default for FeatureSettings {
             .into_iter()
             .map(|(a, b)| (a.into(), b.into()))
             .collect(),
+            context_pill: true,
+            pill_theme: "tide".into(),
+            weather_enabled: false,
+            weather_place: String::new(),
+            weather_fahrenheit: false,
         }
     }
 }
@@ -92,6 +106,12 @@ impl FeatureSettings {
         }
         if !["dark", "light", "system"].contains(&self.theme.as_str()) {
             return Err("Unknown theme".into());
+        }
+        if !PILL_THEMES.contains(&self.pill_theme.as_str()) {
+            return Err("Unknown pill theme".into());
+        }
+        if self.weather_place.chars().count() > 80 {
+            return Err("Weather place must be at most 80 characters".into());
         }
         for url in [&self.gmail_url, &self.outlook_url, &self.whatsapp_url] {
             let parsed = reqwest::Url::parse(url).map_err(|_| "Shortcut URL is invalid")?;

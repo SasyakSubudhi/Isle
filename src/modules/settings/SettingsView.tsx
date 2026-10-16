@@ -253,6 +253,51 @@ export function SettingsView() {
         />
       </div>
       <div className="settings-group">
+        <h4>Pill & widgets</h4>
+        <label>
+          Pill style
+          <select
+            value={draft.pill_theme}
+            onChange={(e) => field('pill_theme', e.target.value as FeatureSettings['pill_theme'])}
+          >
+            <option value="tide">Tide · monochrome waves</option>
+            <option value="still">Still · no motion, just the wordmark</option>
+            <option value="aurora">Aurora · slow soft colour</option>
+            <option value="outline">Outline · hairline glass</option>
+          </select>
+        </label>
+        <Toggle
+          label="Context-aware pill"
+          hint="Shows a timer for coding, meetings, reading or writing. Isle looks only at the app's name, never window titles or content."
+          checked={draft.context_pill}
+          onChange={(v) => field('context_pill', v)}
+        />
+        <Toggle
+          label="Weather widget"
+          hint="Uses the internet: sends the city below to open-meteo.com, at most every 30 minutes."
+          checked={draft.weather_enabled}
+          onChange={(v) => field('weather_enabled', v)}
+        />
+        {draft.weather_enabled && (
+          <>
+            <label>
+              City
+              <input
+                value={draft.weather_place}
+                maxLength={80}
+                placeholder="e.g. Bengaluru, or 12.97, 77.59"
+                onChange={(e) => field('weather_place', e.target.value)}
+              />
+            </label>
+            <Toggle
+              label="Fahrenheit"
+              checked={draft.weather_fahrenheit}
+              onChange={(v) => field('weather_fahrenheit', v)}
+            />
+          </>
+        )}
+      </div>
+      <div className="settings-group">
         <h4>Clipboard & Shelf</h4>
         <Toggle
           label="Clipboard history"
@@ -395,7 +440,8 @@ export function SettingsView() {
       <p className="local-note">
         <Icon name="privacy" size={13} />
         Stored on this computer. No telemetry or cloud sync. Dictionary lookups, including Look up
-        selected text, send the word to dictionaryapi.dev.
+        selected text, send the word to dictionaryapi.dev. The weather widget, when on, sends your
+        city to open-meteo.com.
       </p>
     </section>
   );
