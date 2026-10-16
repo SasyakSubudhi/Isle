@@ -3,6 +3,17 @@
   --control: #ffffff0a;
   --control-hover: #ffffff14;
   --line: #ffffff12;
+  /* Shared colours: every feature reads these so a pill style can retint the whole app. */
+  --ink-strong: #e4e4e7;
+  --ink-soft: #d4d4d8;
+  --on-accent: #0d0d0f;
+  --danger: #ff9e9e;
+  --edge: #ffffff14;
+  --focus-line: #ffffff2e;
+  --scroll-thumb: #ffffff1f;
+  --menu: #18181b;
+  --raised: #1c1c1f;
+  --signal-soft: color-mix(in srgb, var(--signal) 45%, transparent);
   color: var(--text);
   font-size: 13px;
   line-height: 1.45;
@@ -16,6 +27,14 @@
   --control: #0000000a;
   --control-hover: #00000012;
   --line: #00000014;
+  --ink-strong: #27272a;
+  --ink-soft: #3f3f46;
+  --on-accent: #ffffff;
+  --danger: #a62142;
+  --edge: #00000014;
+  --focus-line: #0000002e;
+  --scroll-thumb: #0000001f;
+  --menu: #fafafa;
 }
 [data-theme='light'] .island-pill {
   box-shadow:
@@ -29,17 +48,8 @@
     inset 0 1px 0 #ffffff,
     0 10px 24px -8px #00000059;
 }
-[data-theme='light'] .isle-wordmark {
-  color: #3f3f46;
-}
-[data-theme='light'] .isle-mark-dot {
-  background: #27272a;
-}
 [data-theme='light'] .isle-mark-halo {
   border-color: #0000002e;
-}
-[data-theme='light'] .idle-tide span {
-  background: #27272a;
 }
 [data-theme='light'] .wave-back .wave-fill {
   fill: #00000006;
@@ -130,10 +140,10 @@
   padding: 5px 10px;
   cursor: pointer;
   transition:
-    background 0.18s var(--ease-soft),
-    color 0.18s var(--ease-soft),
-    transform 0.16s var(--ease-out),
-    box-shadow 0.2s var(--ease-soft);
+    background var(--dur-base) var(--ease-soft),
+    color var(--dur-base) var(--ease-soft),
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-soft);
 }
 .island-shell button:active:not(:disabled) {
   transform: scale(0.96);
@@ -167,7 +177,7 @@
   color: var(--text);
 }
 .island-shell .icon-button svg {
-  transition: transform 0.25s var(--ease-out);
+  transition: transform var(--dur-base) var(--ease-out);
 }
 .island-shell .icon-button:hover svg {
   transform: translateY(-1px);
@@ -178,11 +188,8 @@
 }
 .island-shell .primary-button {
   background: var(--accent);
-  color: #0d0d0f;
+  color: var(--on-accent);
   font-weight: 600;
-}
-[data-theme='light'] .primary-button {
-  color: white;
 }
 .island-shell .primary-button:hover {
   filter: brightness(1.06);
@@ -199,10 +206,7 @@
   padding: 4px 8px;
 }
 .island-shell .danger {
-  color: #ff9e9e;
-}
-[data-theme='light'] .danger {
-  color: #a62142;
+  color: var(--danger);
 }
 .island-shell input:not([type='checkbox']):not([type='range']),
 .island-shell textarea,
@@ -219,19 +223,14 @@
   outline-offset: 1px;
   user-select: text;
   transition:
-    border-color 0.2s var(--ease-soft),
-    background 0.2s var(--ease-soft);
+    border-color var(--dur-base) var(--ease-soft),
+    background var(--dur-base) var(--ease-soft);
 }
 .island-shell input:not([type='checkbox']):not([type='range']):focus,
 .island-shell textarea:focus,
 .island-shell select:focus {
-  border-color: #ffffff2e;
+  border-color: var(--focus-line);
   background: var(--control-hover);
-}
-[data-theme='light'] .island-shell input:not([type='checkbox']):not([type='range']):focus,
-[data-theme='light'] .island-shell textarea:focus,
-[data-theme='light'] .island-shell select:focus {
-  border-color: #0000002e;
 }
 .island-shell input::placeholder,
 .island-shell textarea::placeholder {
@@ -243,12 +242,8 @@
   padding-right: 16px;
 }
 .island-shell option {
-  background: #18181b;
-  color: #ececee;
-}
-[data-theme='light'] option {
-  background: #fafafa;
-  color: #18181b;
+  background: var(--menu);
+  color: var(--text);
 }
 .island-shell textarea {
   resize: none;
@@ -310,13 +305,13 @@
   overflow: auto;
   padding: 0 3px 1px 0;
   scrollbar-width: thin;
-  scrollbar-color: #ffffff1f transparent;
+  scrollbar-color: var(--scroll-thumb) transparent;
 }
 .feature::-webkit-scrollbar {
   width: 5px;
 }
 .feature::-webkit-scrollbar-thumb {
-  background: #ffffff1f;
+  background: var(--scroll-thumb);
   border-radius: 9px;
 }
 .feature p {
@@ -415,8 +410,8 @@
   color: var(--brand, currentColor);
   opacity: 0.85;
   transition:
-    opacity 0.2s var(--ease-soft),
-    transform 0.2s var(--ease-out);
+    opacity var(--dur-base) var(--ease-soft),
+    transform var(--dur-base) var(--ease-out);
 }
 .quick-launch button:hover svg {
   opacity: 1;
@@ -511,11 +506,11 @@
   gap: 7px;
   padding: 8px 11px;
   border-radius: 11px;
-  background: #1c1c1f;
+  background: var(--raised);
   color: #ececee;
   font-size: 11px;
   box-shadow:
-    inset 0 0 0 1px #ffffff14,
+    inset 0 0 0 1px var(--edge),
     0 8px 22px -6px #000a;
   overflow-wrap: anywhere;
 }
@@ -629,9 +624,9 @@
   background: var(--control);
   box-shadow: inset 0 0 0 1px transparent;
   transition:
-    background 0.2s var(--ease-soft),
-    transform 0.25s var(--ease-out),
-    box-shadow 0.2s var(--ease-soft);
+    background var(--dur-base) var(--ease-soft),
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-soft);
 }
 .shelf-tile:hover {
   background: var(--control-hover);
@@ -901,8 +896,8 @@
   border-radius: 50%;
   background: var(--line);
   transition:
-    background 0.4s var(--ease-soft),
-    transform 0.4s var(--ease-out);
+    background var(--dur-slow) var(--ease-soft),
+    transform var(--dur-slow) var(--ease-out);
 }
 .focus-cycles span.done {
   background: var(--signal);
@@ -1021,10 +1016,7 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  color: #e4e4e7;
-}
-[data-theme='light'] .idle-timer {
-  color: #27272a;
+  color: var(--ink-strong);
 }
 .peek-copy {
   flex: 1;
@@ -1241,7 +1233,7 @@
   color: var(--muted);
 }
 .inline-error {
-  color: #ff9e9e !important;
+  color: var(--danger) !important;
   white-space: pre-wrap;
 }
 .danger-confirm {
@@ -1340,13 +1332,13 @@
 /* Expanded panel: hairline edge instead of glow */
 .island-shell.is-expanded {
   box-shadow:
-    inset 0 0 0 1px #ffffff14,
+    inset 0 0 0 1px var(--edge),
     inset 0 1px 0 #ffffff0f,
     0 18px 40px -12px #000000b3;
 }
 [data-theme='light'] .island-shell.is-expanded {
   box-shadow:
-    inset 0 0 0 1px #00000014,
+    inset 0 0 0 1px var(--edge),
     0 18px 40px -14px #00000040;
 }
 .panel-header .isle-mark {
@@ -1411,8 +1403,8 @@
 }
 .small-segment button {
   transition:
-    background 0.2s var(--ease-soft),
-    color 0.2s var(--ease-soft);
+    background var(--dur-base) var(--ease-soft),
+    color var(--dur-base) var(--ease-soft);
 }
 .setting-toggle:hover strong {
   color: var(--text);
@@ -1428,7 +1420,7 @@
   animation: rise-in 0.32s var(--ease-out) both;
 }
 .focus-clock .ring-content strong {
-  transition: opacity 0.3s;
+  transition: opacity var(--dur-slow);
 }
 @keyframes rise-in {
   from {
@@ -1500,4 +1492,40 @@
   border-color: var(--signal);
   color: var(--muted);
   cursor: default;
+}
+
+/* Settings → Tab bar: one chip per tool. */
+.tab-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.island-shell .tab-picker label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--control);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background var(--dur-base) var(--ease-soft),
+    color var(--dur-base) var(--ease-soft);
+}
+.island-shell .tab-picker label.is-on {
+  color: var(--text);
+  background: var(--control-hover);
+}
+.island-shell .tab-picker input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.island-shell .tab-picker label:focus-within {
+  outline: 1px solid var(--signal-soft);
 }

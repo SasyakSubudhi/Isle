@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { DUR } from '../../lib/motion';
 import { asset } from '../../lib/api';
 import type { ShelfItem, Tab } from '../../lib/types';
 import { task } from '../../app/store';
@@ -71,8 +72,8 @@ export function DockTray({
       key="dock"
       className="dock-tray"
       initial={{ opacity: 0, y: reduced ? 0 : 4 }}
-      animate={{ opacity: 1, y: 0, transition: { delay: reduced ? 0 : 0.06, duration: 0.16 } }}
-      exit={{ opacity: 0, transition: { duration: 0.07 } }}
+      animate={{ opacity: 1, y: 0, transition: { delay: reduced ? 0 : 0.06, duration: DUR.base } }}
+      exit={{ opacity: 0, transition: { duration: DUR.quick } }}
       role="group"
       aria-label="Docked files"
     >
@@ -126,8 +127,8 @@ export function DockDrop({ reduced }: { reduced: boolean }) {
       className="dock-drop"
       initial={{ opacity: 0, scale: reduced ? 1 : 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.07 } }}
-      transition={{ duration: reduced ? 0.08 : 0.16 }}
+      exit={{ opacity: 0, transition: { duration: DUR.quick } }}
+      transition={{ duration: reduced ? DUR.quick : DUR.base }}
       role="status"
     >
       <span className="dock-drop-icon" aria-hidden="true">

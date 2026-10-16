@@ -4,6 +4,7 @@ import { ipc, type WindowPreferences } from '../../lib/ipc';
 import { task, useApp } from '../../app/store';
 import type { FeatureSettings } from '../../lib/types';
 import { Icon } from '../../ui/Icon';
+import { tabs } from '../../island/islandTabs';
 import { changedFields, clampNumber, hotkeyFromEvent, rebaseDraft } from '../../lib/settingsDraft';
 function Toggle({
   label,
@@ -247,6 +248,35 @@ export function SettingsView() {
           checked={draft.presentation_mode}
           onChange={(v) => field('presentation_mode', v)}
         />
+      </div>
+      <div className="settings-group">
+        <h4>Tab bar</h4>
+        <small>Untick the tools you don't use to keep the tab bar roomy. Shelf always stays.</small>
+        <div className="tab-picker">
+          {tabs
+            .filter((tab) => tab.id !== 'shelf')
+            .map((tab) => {
+              const shown = !(draft.hidden_tabs ?? []).includes(tab.id);
+              return (
+                <label key={tab.id} className={shown ? 'is-on' : ''}>
+                  <input
+                    type="checkbox"
+                    checked={shown}
+                    onChange={(e) =>
+                      field(
+                        'hidden_tabs',
+                        e.target.checked
+                          ? (draft.hidden_tabs ?? []).filter((id) => id !== tab.id)
+                          : [...(draft.hidden_tabs ?? []), tab.id],
+                      )
+                    }
+                  />
+                  <Icon name={tab.icon} size={14} />
+                  <span>{tab.label}</span>
+                </label>
+              );
+            })}
+        </div>
       </div>
       <div className="settings-group">
         <h4>Pill & widgets</h4>

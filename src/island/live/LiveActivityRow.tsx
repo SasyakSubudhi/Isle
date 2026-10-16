@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { DUR, EASE_OUT } from '../../lib/motion';
 import { fileSize } from '../../lib/api';
 import { formatElapsed, formatRate, type Live } from './liveActivity';
 import './live.css';
@@ -68,7 +69,7 @@ export function LiveDetails({ live, now, reduced }: { live: Live; now: number; r
         className={`live-label is-${live.kind} ${live.kind === 'battery-low' && live.critical ? 'is-critical' : ''}`}
         initial={reduced ? false : { opacity: 0, y: 3 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+        transition={{ duration: DUR.base, ease: EASE_OUT }}
         title={label}
       >
         {label}

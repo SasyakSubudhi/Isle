@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { DUR, EASE_OUT } from '../lib/motion';
 import { nativeAvailable } from '../lib/ipc';
 import { api, formatClock } from '../lib/api';
 import type { Tab } from '../lib/types';
@@ -43,9 +44,9 @@ export function Panel({
       animate={{
         opacity: 1,
         y: 0,
-        transition: { delay: reduced ? 0 : 0.1, duration: 0.16 },
+        transition: { delay: reduced ? 0 : 0.1, duration: DUR.base },
       }}
-      exit={{ opacity: 0, transition: { duration: 0.07 } }}
+      exit={{ opacity: 0, transition: { duration: DUR.quick } }}
     >
       <header className="panel-header">
         <IsleMark state="idle" engaged={false} />
@@ -101,27 +102,31 @@ export function Panel({
       ) : (
         <>
           <nav className="tab-bar" aria-label="Isle tools">
-            {tabs.map((tab) => (
-              <button
-                type="button"
-                key={tab.id}
-                aria-label={tab.label}
-                aria-pressed={island.tab === tab.id}
-                title={tab.label}
-                onClick={() => open(tab.id)}
-              >
-                {island.tab === tab.id && (
-                  <motion.span
-                    layoutId="active-tab"
-                    className="tab-highlight"
-                    transition={
-                      reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 32 }
-                    }
-                  />
-                )}
-                <Icon name={tab.icon} />
-              </button>
-            ))}
+            {tabs
+              .filter(
+                (tab) => tab.id === island.tab || !data?.settings.hidden_tabs?.includes(tab.id),
+              )
+              .map((tab) => (
+                <button
+                  type="button"
+                  key={tab.id}
+                  aria-label={tab.label}
+                  aria-pressed={island.tab === tab.id}
+                  title={tab.label}
+                  onClick={() => open(tab.id)}
+                >
+                  {island.tab === tab.id && (
+                    <motion.span
+                      layoutId="active-tab"
+                      className="tab-highlight"
+                      transition={
+                        reduced ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 32 }
+                      }
+                    />
+                  )}
+                  <Icon name={tab.icon} />
+                </button>
+              ))}
           </nav>
           {island.notice?.kind === 'limit' && (
             <div className="limit-notice" role="status">
@@ -171,7 +176,7 @@ export function Panel({
                 className="view-frame"
                 initial={reduced ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+                transition={{ duration: DUR.base, ease: EASE_OUT }}
               >
                 <View />
               </motion.div>
@@ -240,9 +245,9 @@ export function Panel({
             role={toast.error ? 'alert' : 'status'}
             initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: reduced ? 0 : 6, transition: { duration: 0.12 } }}
+            exit={{ opacity: 0, y: reduced ? 0 : 6, transition: { duration: DUR.quick } }}
             transition={
-              reduced ? { duration: 0.1 } : { type: 'spring', stiffness: 520, damping: 34 }
+              reduced ? { duration: DUR.quick } : { type: 'spring', stiffness: 520, damping: 34 }
             }
           >
             <Icon name={toast.error ? 'close' : 'check'} size={14} />

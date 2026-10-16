@@ -85,7 +85,7 @@
   color: var(--muted);
   overflow: hidden;
   cursor: grab;
-  transition: transform 0.2s var(--ease-out);
+  transition: transform var(--dur-base) var(--ease-out);
 }
 .dock-tile:hover {
   transform: translateY(-2px);
@@ -109,7 +109,7 @@
   background: #000000a6;
   color: #f4f4f5;
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity var(--dur-base);
 }
 .dock-tile:hover .dock-tile-name {
   opacity: 1;

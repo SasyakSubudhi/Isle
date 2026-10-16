@@ -30,6 +30,8 @@ export interface FeatureSettings {
   weather_enabled: boolean;
   weather_place: string;
   weather_fahrenheit: boolean;
+  /** Tabs left out of the tab bar. Shelf is always shown. */
+  hidden_tabs: Tab[];
 }
 export type PillTheme = 'tide' | 'still' | 'evergreen' | 'outline';
 export interface ShelfItem {

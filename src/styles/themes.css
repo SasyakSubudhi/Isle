@@ -16,8 +16,24 @@
 
 /* Evergreen: Tide's waves, slowed a touch and tinted deep pine, with motes
    that glow faintly like fireflies over water. */
-[data-pill-theme='evergreen'] .island-pill:not(.is-expanded) {
-  background: color-mix(in srgb, #0f2a22 38%, var(--surface));
+.island-canvas[data-pill-theme='evergreen'] {
+  --surface: #0c1713;
+  --signal: #6fdcae;
+  --edge: #8fe8c01f;
+  --line: #8fe8c014;
+  --control: #8fe8c00d;
+  --control-hover: #8fe8c01a;
+  --menu: #10201a;
+  --raised: #142a21;
+}
+.island-canvas[data-theme='light'][data-pill-theme='evergreen'] {
+  --surface: #f3f9f5;
+  --signal: #1f7a53;
+  --edge: #1f7a5326;
+  --line: #1f7a531c;
+  --control: #1f7a530d;
+  --control-hover: #1f7a5317;
+  --menu: #f3f9f5;
 }
 [data-pill-theme='evergreen'] .wave-back .wave-fill {
   fill: #3fbf8a0d;
@@ -52,9 +68,6 @@
 }
 [data-pill-theme='evergreen'] .ambient-edge {
   background: linear-gradient(90deg, transparent, #9ff0c855, transparent);
-}
-[data-theme='light'][data-pill-theme='evergreen'] .island-pill:not(.is-expanded) {
-  background: color-mix(in srgb, #dff3e8 55%, var(--surface));
 }
 [data-theme='light'][data-pill-theme='evergreen'] .wave-back .wave-line {
   stroke: #1f7a5333;
@@ -103,7 +116,7 @@
   gap: 6px;
   font-size: 12px;
   line-height: 1;
-  color: #d4d4d8;
+  color: var(--ink-soft);
 }
 .context-glyph {
   flex: none;
@@ -122,13 +135,7 @@
   color: var(--muted);
 }
 .context-chip.is-meeting .context-time {
-  color: #e4e4e7;
-}
-[data-theme='light'] .context-chip {
-  color: #3f3f46;
-}
-[data-theme='light'] .context-chip.is-meeting .context-time {
-  color: #27272a;
+  color: var(--ink-strong);
 }
 
 /* Widgets tab */
@@ -237,8 +244,8 @@
   background: transparent;
   box-shadow: inset 0 0 0 1px var(--line);
   transition:
-    background 0.2s var(--ease-soft),
-    box-shadow 0.2s var(--ease-soft);
+    background var(--dur-base) var(--ease-soft),
+    box-shadow var(--dur-base) var(--ease-soft);
 }
 .habit-dot:hover {
   box-shadow: inset 0 0 0 1px var(--muted);

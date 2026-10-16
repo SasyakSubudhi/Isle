@@ -52,7 +52,7 @@ body {
     inset 0 1px 0 #ffffff0d,
     0 8px 20px -6px #00000080;
   cursor: default;
-  transition: box-shadow 0.4s var(--ease-soft);
+  transition: box-shadow var(--dur-slow) var(--ease-soft);
 }
 .island-pill:not(.is-expanded):hover {
   box-shadow:
@@ -86,7 +86,7 @@ body {
   line-height: 1;
   font-weight: 500;
   letter-spacing: 0.01em;
-  color: #d4d4d8;
+  color: var(--ink-soft);
 }
 .idle-tide {
   display: flex;
@@ -98,7 +98,7 @@ body {
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: #e4e4e7;
+  background: var(--ink-strong);
   opacity: 0.35;
   animation: tide 2.8s var(--ease-soft) infinite;
 }
@@ -125,11 +125,11 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #e4e4e7;
+  background: var(--ink-strong);
   transition:
-    width 0.4s var(--ease-out),
-    background 0.3s,
-    transform 0.4s var(--ease-out);
+    width var(--dur-slow) var(--ease-out),
+    background var(--dur-slow),
+    transform var(--dur-slow) var(--ease-out);
 }
 .isle-mark-ripple {
   position: absolute;
@@ -140,7 +140,7 @@ body {
   animation: mark-ripple 6.5s var(--ease-out) 1.5s infinite;
 }
 .isle-mark.is-notice .isle-mark-ripple {
-  border-color: #8ab4ff80;
+  border-color: var(--signal-soft);
   animation-duration: 2.4s;
 }
 .isle-mark-halo {
@@ -158,7 +158,7 @@ body {
   background: var(--signal);
 }
 .isle-mark.is-notice .isle-mark-halo {
-  border-color: #8ab4ff66;
+  border-color: var(--signal-soft);
   animation-duration: 1.6s;
 }
 .isle-mark.is-timer .isle-mark-halo {

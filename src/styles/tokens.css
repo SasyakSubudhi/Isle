@@ -10,4 +10,8 @@
   --signal: #8ab4ff;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Three shared speeds for UI transitions (ambient loops keep their own). */
+  --dur-quick: 0.1s;
+  --dur-base: 0.2s;
+  --dur-slow: 0.4s;
 }

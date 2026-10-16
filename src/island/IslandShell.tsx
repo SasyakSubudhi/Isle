@@ -1,4 +1,5 @@
 import { useLayoutEffect, useEffect, useRef, useState } from 'react';
+import { DUR } from '../lib/motion';
 import { pillSize } from './pillSize';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '../lib/hooks/useReducedMotion';
@@ -209,7 +210,7 @@ export function IslandShell() {
         }}
         transition={
           reduced
-            ? { duration: 0.1 }
+            ? { duration: DUR.quick }
             : { layout: { type: 'spring', stiffness: 380, damping: 30, mass: 0.9 } }
         }
         onLayoutAnimationStart={trackAnimation}

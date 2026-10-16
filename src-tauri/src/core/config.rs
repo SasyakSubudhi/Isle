@@ -3,6 +3,8 @@ use std::{collections::BTreeMap, fs};
 
 /// Pill looks. `tide` is the original monochrome wave and the default.
 pub const PILL_THEMES: [&str; 4] = ["tide", "still", "evergreen", "outline"];
+/// Tabs that can be hidden from the panel's tab bar. Shelf always stays.
+pub const HIDEABLE_TABS: [&str; 6] = ["usage", "dictionary", "focus", "media", "notes", "widgets"];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -38,6 +40,7 @@ pub struct FeatureSettings {
     pub weather_enabled: bool,
     pub weather_place: String,
     pub weather_fahrenheit: bool,
+    pub hidden_tabs: Vec<String>,
 }
 impl Default for FeatureSettings {
     fn default() -> Self {
@@ -81,6 +84,7 @@ impl Default for FeatureSettings {
             weather_enabled: false,
             weather_place: String::new(),
             weather_fahrenheit: false,
+            hidden_tabs: Vec::new(),
         }
     }
 }
@@ -109,6 +113,13 @@ impl FeatureSettings {
         }
         if !PILL_THEMES.contains(&self.pill_theme.as_str()) {
             return Err("Unknown pill theme".into());
+        }
+        if self
+            .hidden_tabs
+            .iter()
+            .any(|t| !HIDEABLE_TABS.contains(&t.as_str()))
+        {
+            return Err("Unknown tab".into());
         }
         if self.weather_place.chars().count() > 80 {
             return Err("Weather place must be at most 80 characters".into());

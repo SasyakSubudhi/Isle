@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { DUR, EASE_OUT } from '../lib/motion';
 import { api, asset, formatClock } from '../lib/api';
 import { task, useApp } from '../app/store';
 import { IsleMark } from '../ui/IsleMark';
@@ -42,9 +43,9 @@ export function IdlePill({
       className="island-content"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.07 } }}
+      exit={{ opacity: 0, transition: { duration: DUR.quick } }}
       whileTap={reduced || paused ? undefined : { scale: 0.97 }}
-      transition={{ duration: reduced ? 0.08 : 0.14 }}
+      transition={{ duration: reduced ? DUR.quick : DUR.base }}
     >
       <motion.span
         className="idle-emblem"
@@ -78,7 +79,7 @@ export function IdlePill({
             className="peek-copy"
             initial={reduced ? false : { opacity: 0, x: -6, filter: 'blur(3px)' }}
             animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+            transition={{ duration: DUR.base, ease: EASE_OUT }}
           >
             {island.notice?.title}
           </motion.span>
