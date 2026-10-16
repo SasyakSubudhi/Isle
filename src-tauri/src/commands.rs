@@ -139,6 +139,9 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
             "app:open" => crate::services::wake(app, "shelf", true),
             "app:settings" => crate::services::wake(app, "settings", true),
             "app:pause" | "app:privacy" => {
+                let Ok(_guard) = SETTINGS_WRITE.lock() else {
+                    return;
+                };
                 let core = app.state::<crate::core::Core>();
                 if let Ok(mut settings) = core.settings() {
                     if id == "app:pause" {
@@ -470,19 +473,45 @@ pub async fn media_command(command: String, position: Option<f64>) -> Result<(),
 pub fn chrome_open(core: State<'_, Core>, service: String) -> Result<(), String> {
     crate::platform::chrome_open(&core.settings()?, &service)
 }
+/// Serializes every read-modify-write of the feature settings so a tray toggle
+/// and a panel save can't overwrite each other.
+pub static SETTINGS_WRITE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 #[tauri::command]
 pub fn settings_set(
     app: AppHandle,
     core: State<'_, Core>,
     settings: FeatureSettings,
 ) -> Result<FeatureSettings, String> {
+    let _guard = SETTINGS_WRITE.lock().map_err(|_| "Settings busy")?;
+    apply_settings(&app, &core, settings)
+}
+
+/// Applies only the keys present in `patch` on top of the current settings.
+#[tauri::command]
+pub fn settings_patch(
+    app: AppHandle,
+    core: State<'_, Core>,
+    patch: serde_json::Map<String, serde_json::Value>,
+) -> Result<FeatureSettings, String> {
+    let _guard = SETTINGS_WRITE.lock().map_err(|_| "Settings busy")?;
+    let next = core.settings()?.merged(patch)?;
+    apply_settings(&app, &core, next)
+}
+
+fn apply_settings(
+    app: &AppHandle,
+    core: &Core,
+    settings: FeatureSettings,
+) -> Result<FeatureSettings, String> {
     use tauri_plugin_autostart::ManagerExt;
     settings.validate()?;
+    settings.validate_chrome_executable()?;
     let old = core.settings()?;
     if settings.hotkeys != old.hotkeys {
-        let errors = crate::services::register_hotkeys(&app, &settings);
+        let errors = crate::services::register_hotkeys(app, &settings);
         if !errors.is_empty() {
-            let _ = crate::services::register_hotkeys(&app, &old);
+            let _ = crate::services::register_hotkeys(app, &old);
             return Err(errors.join("; "));
         }
     }

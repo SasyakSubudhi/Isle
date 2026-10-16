@@ -295,6 +295,7 @@ pub fn chrome_open(
     settings: &crate::core::config::FeatureSettings,
     service: &str,
 ) -> Result<(), String> {
+    settings.validate_chrome_executable()?;
     let setup = chrome_setup();
     let executable = if settings.chrome_executable.is_empty() {
         setup.executable

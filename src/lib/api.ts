@@ -36,6 +36,8 @@ export const api={
   media:(command:string,position?:number)=>call<void>('media_command',{command,position:position??null}),
   chrome:(service:string)=>call<void>('chrome_open',{service}),
   settings:(settings:FeatureSettings)=>call<FeatureSettings>('settings_set',{settings}),
+  /** Changes only the given keys, so a stale copy can't undo changes made elsewhere. */
+  settingsPatch:(patch:Partial<FeatureSettings>)=>call<FeatureSettings>('settings_patch',{patch}),
   download:(id:string,add:boolean)=>call<void>('download_action',{id,add}),
   capture:()=>call<void>('capture_start'),
   quit:()=>call<void>('app_quit'),

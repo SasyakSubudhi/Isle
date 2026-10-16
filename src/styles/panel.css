@@ -265,3 +265,4 @@
   .island-shell button,.shelf-tile,.ring-value,.focus-cycles span,.icon-button svg { transition:none; }
   .island-shell button:active:not(:disabled),.shelf-tile:hover,.icon-button:hover svg,.synonyms button:hover { transform:none; }
 }
+.settings-view input.hotkey-recording { border-color: var(--signal); color: var(--muted); cursor: default; }

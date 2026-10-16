@@ -218,3 +218,37 @@ fn usage_summary_counts_real_sessions_and_exclusions() {
         0.0
     );
 }
+#[test]
+fn settings_patch_only_replaces_named_keys() {
+    let current = FeatureSettings {
+        tracking_paused: true,
+        theme: "light".into(),
+        ..FeatureSettings::default()
+    };
+    let mut patch = serde_json::Map::new();
+    patch.insert("theme".into(), serde_json::json!("dark"));
+    let merged = current.merged(patch).unwrap();
+    assert_eq!(merged.theme, "dark");
+    assert!(
+        merged.tracking_paused,
+        "an untouched key keeps its newer value"
+    );
+    let mut unknown = serde_json::Map::new();
+    unknown.insert("not_a_setting".into(), serde_json::json!(1));
+    assert!(current.merged(unknown).is_err());
+}
+#[test]
+fn chrome_executable_must_be_chrome() {
+    let mut settings = FeatureSettings::default();
+    assert!(settings.validate_chrome_executable().is_ok());
+    settings.chrome_executable = r"C:\Program Files\Google\Chrome\Application\Chrome.EXE".into();
+    assert!(settings.validate_chrome_executable().is_ok());
+    for bad in [
+        r"C:\Windows\System32\cmd.exe",
+        r"C:\evil\chrome.exe.bat",
+        "chrome",
+    ] {
+        settings.chrome_executable = bad.into();
+        assert!(settings.validate_chrome_executable().is_err(), "{bad}");
+    }
+}

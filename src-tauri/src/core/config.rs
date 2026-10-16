@@ -101,6 +101,37 @@ impl FeatureSettings {
         }
         Ok(())
     }
+    /// Returns these settings with only the keys in `patch` replaced.
+    pub fn merged(
+        &self,
+        patch: serde_json::Map<String, serde_json::Value>,
+    ) -> Result<FeatureSettings, String> {
+        let mut value = serde_json::to_value(self).map_err(|e| e.to_string())?;
+        let object = value.as_object_mut().ok_or("Invalid settings")?;
+        for (key, field) in patch {
+            if !object.contains_key(&key) {
+                return Err(format!("Unknown setting {key}"));
+            }
+            object.insert(key, field);
+        }
+        serde_json::from_value(value).map_err(|e| e.to_string())
+    }
+    /// Only Chrome itself may be launched from the shortcut buttons, so the
+    /// settings IPC can't be used to start an arbitrary program.
+    pub fn validate_chrome_executable(&self) -> Result<(), String> {
+        if self.chrome_executable.is_empty() {
+            return Ok(());
+        }
+        let is_chrome = std::path::Path::new(&self.chrome_executable)
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.eq_ignore_ascii_case("chrome.exe"));
+        if is_chrome {
+            Ok(())
+        } else {
+            Err("Chrome executable must be a path to chrome.exe".into())
+        }
+    }
 }
 pub fn load() -> Result<FeatureSettings, String> {
     let path = crate::settings::path()?;
