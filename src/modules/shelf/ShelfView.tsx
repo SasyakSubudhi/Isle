@@ -4,11 +4,13 @@ import { task, useApp } from '../../app/store';
 import type { ShelfItem } from '../../lib/types';
 import { Icon } from '../../ui/Icon';
 import { Empty, IconButton, ProgressRing } from '../../ui/primitives';
+import { ClipArt, QuickClipAction, SmartActions, useClipInfo } from './SmartActions';
 
 function ShelfTile({ item, onDetails }: { item: ShelfItem; onDetails: () => void }) {
   const dispatch = useApp((s) => s.dispatch);
   const dragged = useRef(false);
   const [copied, setCopied] = useState(false);
+  const clip = useClipInfo(item);
   const begin = (event: React.PointerEvent) => {
     if (event.button !== 0 || !item.path) return;
     const { clientX: x, clientY: y } = event;
@@ -72,6 +74,8 @@ function ShelfTile({ item, onDetails }: { item: ShelfItem; onDetails: () => void
         <span className="file-art">
           {item.thumbnail ? (
             <img src={asset(item.thumbnail)} alt="" />
+          ) : clip.kind !== 'text' ? (
+            <ClipArt info={clip} />
           ) : (
             <Icon
               name={item.kind === 'text' ? 'notes' : item.kind === 'link' ? 'link' : 'file'}
@@ -86,9 +90,11 @@ function ShelfTile({ item, onDetails }: { item: ShelfItem; onDetails: () => void
               ? 'Copied'
               : item.missing
                 ? 'Original missing'
-                : item.kind === 'text' || item.kind === 'link'
-                  ? item.kind
-                  : fileSize(item.size)}
+                : clip.kind !== 'text'
+                  ? clip.label
+                  : item.kind === 'text' || item.kind === 'link'
+                    ? item.kind
+                    : fileSize(item.size)}
           </small>
         </span>
       </button>
@@ -101,6 +107,7 @@ function ShelfTile({ item, onDetails }: { item: ShelfItem; onDetails: () => void
             value={(item.expires_at - Date.now()) / Math.max(1, item.expires_at - item.created_at)}
           />
         ) : null}
+        <QuickClipAction info={clip} />
         <IconButton icon="more" label={`Actions for ${item.name}`} onClick={onDetails} />
       </span>
     </div>
@@ -181,6 +188,7 @@ export function ShelfView() {
             {selected.history ? 'Keep on Shelf' : selected.pinned ? 'Unpin' : 'Pin'}
           </button>
         </div>
+        <SmartActions item={selected} />
         <div className="inline-field">
           <label htmlFor="item-stack">Stack</label>
           <select
