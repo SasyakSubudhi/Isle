@@ -6,5 +6,5 @@ export default defineConfig({
   clearScreen: false,
   server: { port: 1420, strictPort: true },
   envPrefix: ['VITE_', 'TAURI_ENV_*'],
-  build: { target: 'chrome110', sourcemap: true },
+  build: { target: 'chrome110', sourcemap: false },
 });
