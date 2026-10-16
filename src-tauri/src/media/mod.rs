@@ -1,3 +1,5 @@
+pub mod accent;
+
 use serde::Serialize;
 use std::{
     sync::{Arc, Mutex},
@@ -22,6 +24,8 @@ pub struct MediaState {
     pub position_seconds: f64,
     pub duration_seconds: f64,
     pub artwork: Option<String>,
+    /// Accent colour taken from the artwork, as `#rrggbb`.
+    pub accent: Option<String>,
     pub error: Option<String>,
 }
 #[derive(Clone, Default)]
@@ -73,6 +77,7 @@ pub fn snapshot(manager: &SessionManager, cache: &std::path::Path) -> Result<Med
         position_seconds: (position - start).max(0) as f64 / 10_000_000.0,
         duration_seconds: (end - start).max(0) as f64 / 10_000_000.0,
         artwork,
+        accent: None,
         error: None,
     })
 }
@@ -129,6 +134,10 @@ pub fn command(command: &str, position: Option<f64>) -> Result<(), String> {
     }
     Ok(())
 }
+fn artwork_accent(path: &str) -> Option<String> {
+    let image = image::open(path).ok()?.thumbnail(64, 64).to_rgb8();
+    accent::accent(image.pixels().map(|p| p.0))
+}
 pub fn start(app: AppHandle, media: Media, cache: std::path::PathBuf) {
     std::thread::spawn(move || {
         // SAFETY: The dedicated worker owns its MTA; WinRT interfaces never escape
@@ -139,8 +148,9 @@ pub fn start(app: AppHandle, media: Media, cache: std::path::PathBuf) {
             );
         }
         let manager = SessionManager::RequestAsync().and_then(|op| op.join());
+        let mut accents: (Option<String>, Option<String>) = (None, None);
         loop {
-            let next = match &manager {
+            let mut next = match &manager {
                 Ok(manager) => snapshot(manager, &cache).unwrap_or_else(|error| MediaState {
                     error: Some(error),
                     ..Default::default()
@@ -150,6 +160,13 @@ pub fn start(app: AppHandle, media: Media, cache: std::path::PathBuf) {
                     ..Default::default()
                 },
             };
+            if next.artwork != accents.0 {
+                accents = (
+                    next.artwork.clone(),
+                    next.artwork.as_deref().and_then(artwork_accent),
+                );
+            }
+            next.accent = accents.1.clone();
             if let Ok(mut current) = media.0.lock() {
                 if *current != next {
                     *current = next.clone();

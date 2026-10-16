@@ -113,6 +113,12 @@ pub fn start(app: AppHandle, core: Core) -> Result<(), String> {
     let media = crate::media::Media::default();
     app.manage(media.clone());
     crate::media::start(app.clone(), media, core.0.cache.clone());
+    let activity = crate::activity::Activity::default();
+    app.manage(activity.clone());
+    crate::activity::start(app.clone(), core.clone(), activity);
+    let meter = crate::activity::audio::Meter::default();
+    app.manage(meter.clone());
+    crate::activity::audio::start(app.clone(), meter);
     std::thread::spawn(move || {
         let mut expire = Instant::now();
         loop {
