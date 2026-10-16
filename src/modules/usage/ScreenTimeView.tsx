@@ -3,7 +3,7 @@ import { api, asset, formatTime } from '../../lib/api';
 import { clampNumber } from '../../lib/settingsDraft';
 import { task, useApp } from '../../app/store';
 import type { UsageSummary } from '../../lib/types';
-import { Empty, IconButton } from '../../ui/primitives';
+import { Empty, ErrorState, IconButton, Loading } from '../../ui/primitives';
 import { Icon } from '../../ui/Icon';
 export function ScreenTimeView() {
   const settings = useApp((s) => s.data!.settings);
@@ -13,6 +13,7 @@ export function ScreenTimeView() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [limit, setLimit] = useState('60');
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     let disposed = false;
     const refresh = () =>
@@ -33,7 +34,7 @@ export function ScreenTimeView() {
       disposed = true;
       void stop.then((unlisten) => unlisten()).catch(() => {});
     };
-  }, [range, settings.excluded_apps, settings.tracking_paused]);
+  }, [range, settings.excluded_apps, settings.tracking_paused, attempt]);
   const app = summary?.apps.find((a) => a.id === selected);
   const maximum = Math.max(
     1,
@@ -85,11 +86,14 @@ export function ScreenTimeView() {
         />
       </div>
       {error ? (
-        <Empty icon="usage" title="Usage couldn’t load">
-          {error}
-        </Empty>
+        <ErrorState
+          icon="usage"
+          title="Usage couldn’t load"
+          error={error}
+          onRetry={() => setAttempt((n) => n + 1)}
+        />
       ) : !summary ? (
-        <p className="loading-copy">Reading your local activity…</p>
+        <Loading inline label="Reading your local activity…" />
       ) : summary.total_seconds === 0 ? (
         <Empty
           icon="usage"

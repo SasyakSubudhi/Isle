@@ -430,6 +430,20 @@
   margin-top: 10px;
   font-size: 11px;
 }
+/* Error states carry a retry button, so they sit a little tighter to fit short tools. */
+.empty-state[role='alert'] .empty-orbit {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+}
+.empty-state[role='alert'] button {
+  margin-top: 8px;
+}
+.feature > .empty-state[role='alert'] {
+  height: auto;
+  min-height: 0;
+  padding-top: 18px;
+}
 .loading-state {
   display: flex;
   align-items: center;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api';
 import { task, useApp } from '../../app/store';
 import type { DictionaryResult } from '../../lib/types';
-import { Empty, IconButton } from '../../ui/primitives';
+import { Empty, ErrorState, IconButton, Loading } from '../../ui/primitives';
 import { Icon } from '../../ui/Icon';
 
 export function DictionaryView() {
@@ -97,9 +97,12 @@ export function DictionaryView() {
         )}
       </form>
       {error ? (
-        <Empty icon="dictionary" title="Let’s try another word">
-          {error}
-        </Empty>
+        <ErrorState
+          icon="dictionary"
+          title="Let’s try another word"
+          error={error}
+          onRetry={() => lookup(word)}
+        />
       ) : result ? (
         <div className="definition-body">
           <div className="word-heading">
@@ -188,7 +191,7 @@ export function DictionaryView() {
           )}
         </>
       ) : (
-        <p className="loading-copy">Looking up “{word}”…</p>
+        <Loading inline label={`Looking up “${word}”…`} />
       )}
     </section>
   );

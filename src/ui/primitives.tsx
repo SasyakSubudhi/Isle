@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
+import { errorMessage } from '../lib/errors';
 export function IconButton({
   icon,
   label,
@@ -23,14 +24,16 @@ export function Empty({
   title,
   children,
   action,
+  alert = false,
 }: {
   icon: IconName;
   title: string;
   children: ReactNode;
   action?: ReactNode;
+  alert?: boolean;
 }) {
   return (
-    <div className="empty-state">
+    <div className="empty-state" role={alert ? 'alert' : undefined}>
       <span className="empty-orbit">
         <Icon name={icon} size={25} />
       </span>
@@ -38,6 +41,44 @@ export function Empty({
       <p>{children}</p>
       {action}
     </div>
+  );
+}
+/** The one way a tool says it is waiting. `inline` keeps it to a line of text. */
+export function Loading({ label, inline = false }: { label: string; inline?: boolean }) {
+  if (inline)
+    return (
+      <p className="loading-copy" role="status">
+        {label}
+      </p>
+    );
+  return (
+    <div className="loading-state" role="status">
+      <span className="spinner" aria-hidden="true" />
+      <p>{label}</p>
+    </div>
+  );
+}
+/** The one way a tool says something failed, with a retry when one makes sense. */
+export function ErrorState({
+  icon,
+  title,
+  error,
+  onRetry,
+}: {
+  icon: IconName;
+  title: string;
+  error: unknown;
+  onRetry?: () => void;
+}) {
+  return (
+    <Empty
+      icon={icon}
+      title={title}
+      alert
+      action={onRetry ? <button onClick={onRetry}>Try again</button> : undefined}
+    >
+      {errorMessage(error)}
+    </Empty>
   );
 }
 export function ProgressRing({
