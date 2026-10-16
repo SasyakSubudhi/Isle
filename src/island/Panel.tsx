@@ -1,4 +1,8 @@
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { CommandPalette, openPalette, usePalette } from './palette/CommandPalette';
+import { dndActive } from '../lib/dnd';
+import { useLive } from './live/useLiveActivity';
 import { DUR, EASE_OUT } from '../lib/motion';
 import { nativeAvailable } from '../lib/ipc';
 import { api, formatClock } from '../lib/api';
@@ -28,6 +32,10 @@ export function Panel({
   const { island, data, loading, bootError, toast, capturing, dispatch, patch, notify, load } =
     useApp();
   const View = views[island.tab];
+  const paletteOpen = usePalette((s) => s.open);
+  const liveFeed = useLive((s) => s.activity);
+  const dnd = dndActive(data?.settings, liveFeed);
+  useEffect(() => () => usePalette.setState({ open: false }), []);
   const launch = (service: string) => {
     if (!data?.settings.chrome_profile) {
       open('settings', true, true);
@@ -53,7 +61,27 @@ export function Panel({
         <span className="panel-name">isle</span>
         <span className="header-divider" />
         <span className="panel-title">{privateMode ? 'Presentation mode' : title}</span>
+        {dnd && !privateMode && (
+          <span
+            className="dnd-badge"
+            title={
+              data?.settings.do_not_disturb
+                ? 'Do Not Disturb is on'
+                : 'Do Not Disturb is on during your call'
+            }
+          >
+            <Icon name="moon" size={13} />
+          </span>
+        )}
         <span className="spacer" />
+        {!privateMode && (
+          <IconButton
+            icon="search"
+            label={`Search Isle (${data?.settings.hotkeys.palette ?? 'Ctrl+Alt+K'})`}
+            active={paletteOpen}
+            onClick={() => (paletteOpen ? usePalette.setState({ open: false }) : openPalette())}
+          />
+        )}
         {!privateMode && (
           <IconButton
             icon="settings"
@@ -255,6 +283,7 @@ export function Panel({
           </motion.div>
         )}
       </AnimatePresence>
+      {paletteOpen && !privateMode && <CommandPalette open={(tab) => open(tab, true)} />}
     </motion.div>
   );
 }

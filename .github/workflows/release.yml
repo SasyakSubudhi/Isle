@@ -1,0 +1,37 @@
+# Builds a signed Windows installer and the latest.json that Isle's updater
+# reads, and publishes them as a GitHub Release when a version tag is pushed.
+#
+# One-time setup (repository Settings > Secrets and variables > Actions):
+#   secret   TAURI_SIGNING_PRIVATE_KEY           contents of isle.key
+#   secret   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  its password
+#   variable ISLE_UPDATER_PUBKEY                 contents of isle.key.pub
+# Then bump the version in src-tauri/tauri.conf.json and push a tag like v0.1.2.
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          ISLE_UPDATER_PUBKEY: ${{ vars.ISLE_UPDATER_PUBKEY }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Isle ${{ github.ref_name }}
+          releaseDraft: false
+          includeUpdaterJson: true
+          args: --config {"bundle":{"createUpdaterArtifacts":true}}

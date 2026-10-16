@@ -138,7 +138,7 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
         match id {
             "app:open" => crate::services::wake(app, "shelf", true),
             "app:settings" => crate::services::wake(app, "settings", true),
-            "app:pause" | "app:privacy" => {
+            "app:pause" | "app:privacy" | "app:dnd" => {
                 let Ok(_guard) = SETTINGS_WRITE.lock() else {
                     return;
                 };
@@ -146,6 +146,8 @@ pub fn handle_menu(app: &AppHandle, id: &str) {
                 if let Ok(mut settings) = core.settings() {
                     if id == "app:pause" {
                         settings.tracking_paused = !settings.tracking_paused;
+                    } else if id == "app:dnd" {
+                        settings.do_not_disturb = !settings.do_not_disturb;
                     } else {
                         settings.presentation_mode = !settings.presentation_mode;
                     }
@@ -511,7 +513,7 @@ pub fn settings_patch(
     apply_settings(&app, &core, next)
 }
 
-fn apply_settings(
+pub(crate) fn apply_settings(
     app: &AppHandle,
     core: &Core,
     settings: FeatureSettings,

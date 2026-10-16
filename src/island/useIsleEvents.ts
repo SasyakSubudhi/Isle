@@ -4,6 +4,15 @@ import { api } from '../lib/api';
 import type { Download, FeatureSettings, MediaState, ShelfItem, Tab, Timer } from '../lib/types';
 import { task, useApp } from '../app/store';
 import { dockApi } from '../modules/dock/dock';
+import { dndActive } from '../lib/dnd';
+import { openPalette } from './palette/CommandPalette';
+import { useLive } from './live/useLiveActivity';
+
+/** Peeks stay away in presentation mode and during Do Not Disturb. */
+const quiet = () => {
+  const settings = useApp.getState().data?.settings;
+  return !!settings?.presentation_mode || dndActive(settings, useLive.getState().activity);
+};
 
 export interface IsleControls {
   open: (tab?: Tab, focus?: boolean, pin?: boolean) => void;
@@ -75,7 +84,10 @@ export function useIsleEvents(controls: IsleControls) {
       dispatch({ type: 'dropHover', active }),
     );
     watch<string>('island://hotkey', (name) => {
-      if (name === 'toggle') {
+      if (name === 'palette') {
+        open(undefined, true, true);
+        openPalette();
+      } else if (name === 'toggle') {
         if (useApp.getState().island.mode === 'expanded') close();
         else open(undefined, true, true);
       } else
@@ -97,7 +109,7 @@ export function useIsleEvents(controls: IsleControls) {
     });
     watch<ShelfItem>('shelf://item-added', (item) => {
       void refreshShelf();
-      if (!useApp.getState().data?.settings.presentation_mode)
+      if (!quiet())
         dispatch({
           type: 'peek',
           notice: {
@@ -111,7 +123,7 @@ export function useIsleEvents(controls: IsleControls) {
       const current = useApp.getState().data;
       if (current) {
         patch({ downloads: [...current.downloads.filter((d) => d.id !== item.id), item] });
-        if (!current.settings.presentation_mode)
+        if (!quiet())
           dispatch({
             type: 'peek',
             notice: { title: item.name, tab: 'shelf', kind: 'download', downloadId: item.id },
@@ -125,7 +137,7 @@ export function useIsleEvents(controls: IsleControls) {
     watch<Timer>('timer://changed', (timer) => patch({ timer }));
     watch<Timer>('timer://completed', (timer) => {
       patch({ timer });
-      if (!useApp.getState().data?.settings.presentation_mode)
+      if (!quiet())
         dispatch({
           type: 'peek',
           notice: {
@@ -138,7 +150,7 @@ export function useIsleEvents(controls: IsleControls) {
         });
     });
     watch<{ id: string; name: string; minutes: number }>('usage://limit', (item) => {
-      if (!useApp.getState().data?.settings.presentation_mode)
+      if (!quiet())
         dispatch({
           type: 'peek',
           notice: {

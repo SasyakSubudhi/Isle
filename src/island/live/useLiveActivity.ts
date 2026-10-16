@@ -35,11 +35,13 @@ export function useLiveActivity({
   timerActive,
   mediaPlaying,
   animate,
+  dnd,
 }: {
   privateMode: boolean;
   timerActive: boolean;
   mediaPlaying: boolean;
   animate: boolean;
+  dnd?: boolean;
 }): { live: Live | null; now: number } {
   // Select fields so the 25 Hz loudness updates never re-render the shell.
   const activity = useLive((s) => s.activity);
@@ -78,7 +80,15 @@ export function useLiveActivity({
     },
     [],
   );
-  const live = pickLive({ activity, powerChangedAt, now, timerActive, mediaPlaying, privateMode });
+  const live = pickLive({
+    activity,
+    powerChangedAt,
+    now,
+    timerActive,
+    mediaPlaying,
+    privateMode,
+    dnd,
+  });
   // Tick once a second for call timers, and to end the charger notice on time.
   const ticking =
     live?.kind === 'call' ||

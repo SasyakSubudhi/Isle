@@ -16,8 +16,9 @@ use windows::{
         },
         UI::{
             Shell::{
-                FOLDERID_Downloads, IShellItemImageFactory, SHCreateItemFromParsingName,
-                SHGetKnownFolderPath, ShellExecuteW, KF_FLAG_DEFAULT, SIIGBF_BIGGERSIZEOK,
+                FOLDERID_Documents, FOLDERID_Downloads, IShellItemImageFactory,
+                SHCreateItemFromParsingName, SHGetKnownFolderPath, ShellExecuteW, KF_FLAG_DEFAULT,
+                SIIGBF_BIGGERSIZEOK,
             },
             WindowsAndMessaging::{
                 EnumChildWindows, GetWindowThreadProcessId, IsWindowVisible, SW_SHOWNORMAL,
@@ -26,6 +27,20 @@ use windows::{
     },
 };
 
+pub fn documents_folder() -> PathBuf {
+    // SAFETY: Same pattern as downloads_folder: the COM string is copied before
+    // it is freed, and failure falls back to the user's home folder.
+    unsafe {
+        if let Ok(path) = SHGetKnownFolderPath(&FOLDERID_Documents, KF_FLAG_DEFAULT, None) {
+            let result = path.to_string().ok().map(PathBuf::from);
+            CoTaskMemFree(Some(path.0.cast()));
+            if let Some(path) = result {
+                return path;
+            }
+        }
+    }
+    PathBuf::from(std::env::var_os("USERPROFILE").unwrap_or_default()).join("Documents")
+}
 pub fn downloads_folder() -> PathBuf {
     // SAFETY: Known-folder API allocates a UTF-16 string; it is converted before
     // its COM allocation is freed. Failure falls back to the user's home folder.

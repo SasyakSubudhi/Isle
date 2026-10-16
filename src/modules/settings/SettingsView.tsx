@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../lib/api';
+import { api, fileSize } from '../../lib/api';
 import { ipc, type WindowPreferences } from '../../lib/ipc';
 import { task, useApp } from '../../app/store';
-import type { FeatureSettings } from '../../lib/types';
+import type { BackupInfo, FeatureSettings, UpdateStatus } from '../../lib/types';
+import { errorMessage } from '../../lib/errors';
 import { Icon } from '../../ui/Icon';
 import { tabs } from '../../island/islandTabs';
 import { changedFields, clampNumber, hotkeyFromEvent, rebaseDraft } from '../../lib/settingsDraft';
@@ -250,6 +251,23 @@ export function SettingsView() {
         />
       </div>
       <div className="settings-group">
+        <h4>Do Not Disturb</h4>
+        <Toggle
+          label="Do Not Disturb"
+          hint="No pop-ups for downloads, Shelf, timers or limits. Call and camera indicators still show."
+          checked={draft.do_not_disturb}
+          onChange={(v) => field('do_not_disturb', v)}
+        />
+        <Toggle
+          label="Turn on during calls"
+          hint="While your camera, microphone or screen sharing is in use. Isle already hides during full-screen apps and games."
+          checked={draft.auto_dnd}
+          onChange={(v) => field('auto_dnd', v)}
+        />
+      </div>
+      <BackupSection />
+      <UpdateSection />
+      <div className="settings-group">
         <h4>Tab bar</h4>
         <small>Untick the tools you don't use to keep the tab bar roomy. Shelf always stays.</small>
         <div className="tab-picker">
@@ -437,11 +455,13 @@ export function SettingsView() {
           <label key={name}>
             {name === 'selection'
               ? 'Look up selected text'
-              : name === 'toggle'
-                ? 'Toggle Isle'
-                : name === 'usage'
-                  ? 'Screen time'
-                  : name[0].toUpperCase() + name.slice(1)}
+              : name === 'palette'
+                ? 'Search everything'
+                : name === 'toggle'
+                  ? 'Toggle Isle'
+                  : name === 'usage'
+                    ? 'Screen time'
+                    : name[0].toUpperCase() + name.slice(1)}
             <HotkeyField
               value={value}
               onChange={(combo) => field('hotkeys', { ...draft.hotkeys, [name]: combo })}
@@ -449,7 +469,8 @@ export function SettingsView() {
           </label>
         ))}
         <Toggle
-          label="Launch at Windows startup"
+          label="Start with Windows"
+          hint="Isle starts when you sign in and keeps running in the background."
           checked={draft.launch_at_startup}
           onChange={(v) => field('launch_at_startup', v)}
         />
@@ -470,5 +491,127 @@ export function SettingsView() {
         city to open-meteo.com.
       </p>
     </section>
+  );
+}
+
+/** Back up now, restore one of the saved backups, or open the folder. */
+function BackupSection() {
+  const { notify } = useApp();
+  const [backups, setBackups] = useState<BackupInfo[] | null>(null);
+  const [confirm, setConfirm] = useState<string | null>(null);
+  const refresh = () => void task(api.backupList).then((list) => list && setBackups(list));
+  useEffect(refresh, []);
+  return (
+    <div className="settings-group">
+      <h4>Backup & restore</h4>
+      <small>
+        Saves notes, Shelf, saved words, habits, the dock and settings to Documents\Isle Backups.
+        Restoring adds back anything missing and keeps what you have now.
+      </small>
+      <div className="settings-actions">
+        <button
+          type="button"
+          className="primary-button"
+          onClick={() =>
+            void task(api.backupCreate).then((b) => {
+              if (!b) return;
+              notify(`Backed up to ${b.name}`);
+              refresh();
+            })
+          }
+        >
+          <Icon name="backup" size={14} /> Back up now
+        </button>
+        <button type="button" onClick={() => void task(api.backupFolder)}>
+          <Icon name="folder" size={14} /> Open folder
+        </button>
+      </div>
+      {backups && backups.length > 0 && (
+        <ul className="backup-list">
+          {backups.slice(0, 5).map((b) => (
+            <li key={b.name}>
+              <span>
+                {new Date(b.created_at).toLocaleString()}
+                <small>{fileSize(b.bytes)}</small>
+              </span>
+              {confirm === b.name ? (
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() =>
+                    void task(() => api.backupRestore(b.name)).then((r) => {
+                      setConfirm(null);
+                      if (!r) return;
+                      notify(
+                        `Restored ${r.added} item${r.added === 1 ? '' : 's'}` +
+                          (r.settings_restored ? ' and your settings' : ''),
+                      );
+                      void useApp.getState().load();
+                    })
+                  }
+                >
+                  Confirm restore
+                </button>
+              ) : (
+                <button type="button" onClick={() => setConfirm(b.name)}>
+                  Restore
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Shows the installed version and installs a newer signed release. */
+function UpdateSection() {
+  const [status, setStatus] = useState<UpdateStatus | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const check = async () => {
+    setBusy(true);
+    try {
+      const next = await api.updateCheck();
+      setStatus(next);
+      setMessage(
+        next.available
+          ? `Isle ${next.available} is ready to install.`
+          : `Isle ${next.current} is up to date.`,
+      );
+    } catch (e) {
+      setMessage(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="settings-group">
+      <h4>Updates</h4>
+      {message && <small>{message}</small>}
+      <div className="settings-actions">
+        <button type="button" disabled={busy} onClick={() => void check()}>
+          <Icon name="refresh" size={14} /> {busy ? 'Checking…' : 'Check for updates'}
+        </button>
+        {status?.available && (
+          <button
+            type="button"
+            className="primary-button"
+            disabled={busy}
+            onClick={() => {
+              setBusy(true);
+              setMessage('Downloading the update. Isle restarts when it is done.');
+              void api.updateInstall().catch((e) => {
+                setBusy(false);
+                setMessage(errorMessage(e));
+              });
+            }}
+          >
+            Install {status.available}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }

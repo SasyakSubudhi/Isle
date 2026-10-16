@@ -41,6 +41,11 @@ pub struct FeatureSettings {
     pub weather_place: String,
     pub weather_fahrenheit: bool,
     pub hidden_tabs: Vec<String>,
+    /// Do Not Disturb: no peeks or live-activity pop-ups.
+    pub do_not_disturb: bool,
+    /// Turn Do Not Disturb on by itself while the camera, microphone or screen
+    /// sharing is in use (a call).
+    pub auto_dnd: bool,
 }
 impl Default for FeatureSettings {
     fn default() -> Self {
@@ -75,6 +80,7 @@ impl Default for FeatureSettings {
                 ("shelf", "Ctrl+Alt+S"),
                 ("usage", "Ctrl+Alt+T"),
                 ("selection", "Ctrl+Alt+Shift+D"),
+                ("palette", "Ctrl+Alt+K"),
             ]
             .into_iter()
             .map(|(a, b)| (a.into(), b.into()))
@@ -85,6 +91,8 @@ impl Default for FeatureSettings {
             weather_place: String::new(),
             weather_fahrenheit: false,
             hidden_tabs: Vec::new(),
+            do_not_disturb: false,
+            auto_dnd: true,
         }
     }
 }
@@ -182,6 +190,16 @@ pub fn load() -> Result<FeatureSettings, String> {
     // Aurora was replaced by Evergreen; carry existing choices over.
     if settings.pill_theme == "aurora" {
         settings.pill_theme = "evergreen".into();
+    }
+    // Hotkeys added in later versions get their default unless one is taken.
+    for (name, combo) in FeatureSettings::default().hotkeys {
+        let taken = settings
+            .hotkeys
+            .values()
+            .any(|v| v.eq_ignore_ascii_case(&combo));
+        if !settings.hotkeys.contains_key(&name) && !taken {
+            settings.hotkeys.insert(name, combo);
+        }
     }
     FeatureSettings::validate(&settings)?;
     Ok(settings)

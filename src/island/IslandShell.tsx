@@ -16,7 +16,8 @@ import { DockBadge, DockDrop, DockTray } from '../modules/dock/DockViews';
 import { useDock, useDockEvents } from '../modules/dock/dock';
 import { useActivityFeed } from '../modules/context/ContextChip';
 import { AudioWave } from './live/AudioWave';
-import { useLiveActivity } from './live/useLiveActivity';
+import { useLive, useLiveActivity } from './live/useLiveActivity';
+import { dndActive } from '../lib/dnd';
 
 export function IslandShell() {
   const { island, data, dispatch, notify, refreshShelf } = useApp();
@@ -38,7 +39,10 @@ export function IslandShell() {
   const dropping = island.dropHover && !expanded;
   const paused = !pageVisible || !nativeVisible;
   const mediaPlaying = !privateMode && !!data?.media.playing;
+  const liveFeed = useLive((s) => s.activity);
+  const dnd = dndActive(data?.settings, liveFeed);
   const { live, now } = useLiveActivity({
+    dnd,
     privateMode,
     timerActive: data?.timer.status === 'running' || data?.timer.status === 'paused',
     mediaPlaying,

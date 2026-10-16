@@ -20,6 +20,8 @@ export interface LiveInput {
   timerActive: boolean;
   mediaPlaying: boolean;
   privateMode: boolean;
+  /** Do Not Disturb: only the call/sensor indicator and a critical battery show. */
+  dnd?: boolean;
 }
 
 const CALL_APPS = ['Zoom', 'Teams', 'Webex', 'Slack', 'Discord', 'Skype', 'Google Meet'];
@@ -43,6 +45,12 @@ export function pickLive(input: LiveInput): Live | null {
         app: use.app,
         since: use.since,
       };
+  }
+  if (input.dnd) {
+    const battery = activity.battery;
+    return battery && !battery.plugged_in && battery.percent <= CRITICAL_BATTERY
+      ? { kind: 'battery-low', percent: battery.percent, critical: true }
+      : null;
   }
   if (activity.downloads.length) {
     const [first] = activity.downloads;

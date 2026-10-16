@@ -32,6 +32,10 @@ export interface FeatureSettings {
   weather_fahrenheit: boolean;
   /** Tabs left out of the tab bar. Shelf is always shown. */
   hidden_tabs: Tab[];
+  /** No peeks or live-activity pop-ups. */
+  do_not_disturb: boolean;
+  /** Do Not Disturb turns itself on during calls (camera, microphone or screen sharing in use). */
+  auto_dnd: boolean;
 }
 export type PillTheme = 'tide' | 'still' | 'evergreen' | 'outline';
 export interface ShelfItem {
@@ -138,3 +142,18 @@ export interface DictionaryResult {
 }
 export type Tab =
   'shelf' | 'usage' | 'dictionary' | 'focus' | 'media' | 'notes' | 'widgets' | 'settings';
+export interface BackupInfo {
+  name: string;
+  created_at: number;
+  bytes: number;
+}
+export interface RestoreSummary {
+  added: number;
+  skipped: number;
+  settings_restored: boolean;
+}
+export interface UpdateStatus {
+  current: string;
+  available: string | null;
+  notes: string | null;
+}

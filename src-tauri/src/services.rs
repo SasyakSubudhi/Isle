@@ -76,7 +76,31 @@ pub fn register_hotkeys(app: &AppHandle, settings: &FeatureSettings) -> Vec<Stri
     }
     errors
 }
+/// Isle should always be there: turn on start-with-Windows once (the first run
+/// of a version that has this), and repair the registry entry if a reinstall
+/// or cleanup tool removed it while the setting is still on.
+fn ensure_autostart(app: &AppHandle, core: &Core) {
+    use tauri_plugin_autostart::ManagerExt;
+    const KEY: &str = "autostart_initialized";
+    let result = (|| -> Result<(), String> {
+        let mut settings = core.settings()?;
+        if core.kv_get::<bool>(KEY)? != Some(true) {
+            settings.launch_at_startup = true;
+            core.save_settings(settings.clone())?;
+            core.kv_set(KEY, &true)?;
+        }
+        let enabled = app.autolaunch().is_enabled().unwrap_or(false);
+        if settings.launch_at_startup && !enabled {
+            app.autolaunch().enable().map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    })();
+    if let Err(e) = result {
+        eprintln!("Isle autostart: {e}");
+    }
+}
 pub fn start(app: AppHandle, core: Core) -> Result<(), String> {
+    ensure_autostart(&app, &core);
     let errors = register_hotkeys(&app, &core.settings()?);
     core.kv_set("hotkey_errors", &errors)?;
     if !errors.is_empty() {
@@ -90,6 +114,7 @@ pub fn start(app: AppHandle, core: Core) -> Result<(), String> {
         .separator()
         .text("app:pause", "Pause / resume tracking")
         .text("app:privacy", "Toggle presentation mode")
+        .text("app:dnd", "Toggle Do Not Disturb")
         .text("app:capture-cancel", "Cancel screenshot capture")
         .separator()
         .text("quit", "Quit Isle")

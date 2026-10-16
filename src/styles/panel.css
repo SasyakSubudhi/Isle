@@ -1529,3 +1529,142 @@
 .island-shell .tab-picker label:focus-within {
   outline: 1px solid var(--signal-soft);
 }
+
+/* Command palette: a search sheet over the panel body. */
+.panel-content {
+  position: relative;
+}
+.palette {
+  position: absolute;
+  z-index: 20;
+  inset: 34px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 2px 4px;
+  background: var(--surface);
+  animation: palette-in var(--dur-base) var(--ease-out);
+}
+@keyframes palette-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.island-shell .palette-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--control);
+  box-shadow: inset 0 0 0 1px var(--focus-line);
+  color: var(--muted);
+}
+.island-shell .palette-field input:not([type='checkbox']):not([type='range']) {
+  flex: 1;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+  box-shadow: none;
+}
+.island-shell .palette-field:focus-within {
+  box-shadow: inset 0 0 0 1px var(--signal-soft);
+}
+.palette-field kbd {
+  font: inherit;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--control-hover);
+}
+.palette-results {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+.palette-results li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+.palette-results li span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.palette-results li small,
+.palette-results li svg {
+  color: var(--muted);
+}
+.palette-results li.is-active {
+  background: var(--control-hover);
+}
+.palette-results li.is-active svg {
+  color: var(--signal);
+}
+.palette-results .palette-empty {
+  color: var(--muted);
+  cursor: default;
+}
+.dnd-badge {
+  display: inline-grid;
+  place-items: center;
+  margin-left: 8px;
+  color: var(--signal);
+}
+
+/* Settings: backup list and action rows */
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.settings-actions button {
+  gap: 6px;
+}
+.backup-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.backup-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--control);
+  font-size: 11px;
+}
+.backup-list li span {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+}
+.backup-list small {
+  color: var(--muted);
+}
+.island-shell .palette-field input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

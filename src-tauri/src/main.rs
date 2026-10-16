@@ -3,6 +3,7 @@
 use tauri::Manager;
 
 mod activity;
+mod backup;
 mod clip_actions;
 mod clipboard;
 mod commands;
@@ -16,6 +17,7 @@ mod platform;
 mod services;
 mod settings;
 mod taskbar;
+mod updater;
 mod usage;
 mod widgets;
 mod window;
@@ -51,6 +53,7 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent,None))
+        .plugin(updater::plugin())
         .setup(|app| {
             let window = app.get_webview_window("main").ok_or("Missing island window")?;
             // Propagate the native taskbar API result instead of relying solely on
@@ -77,7 +80,9 @@ fn main() {
             commands::stacks_list,commands::stack_add,commands::stack_remove,commands::notes_list,commands::note_save,commands::note_remove,commands::dictionary_lookup,commands::dictionary_save,commands::usage_summary,commands::usage_clear,commands::usage_snooze,commands::timer_action,commands::media_command,commands::chrome_open,commands::settings_set,commands::settings_patch,commands::download_action,commands::capture_start,commands::app_quit,
             context::context_current,widgets::habits_list,widgets::habits_save,widgets::weather_get,
             clip_actions::clip_write_text,clip_actions::clip_open_url,
-            activity::activity_get,activity::audio_meter])
+            activity::activity_get,activity::audio_meter,
+            backup::backup_create,backup::backup_list,backup::backup_restore,backup::backup_open_folder,
+            updater::update_check,updater::update_install])
         .on_menu_event(|app,event| commands::handle_menu(app,event.id().as_ref()))
         .run(tauri::generate_context!())
         .expect("Isle could not start");

@@ -18,6 +18,9 @@ use windows::Win32::{
 };
 
 static SIGNALS: OnceLock<Arc<Signals>> = OnceLock::new();
+/// Broadcast by Explorer when it (re)creates the taskbar, e.g. after a crash
+/// or restart. Placement is recomputed against the new taskbar.
+static TASKBAR_CREATED: OnceLock<u32> = OnceLock::new();
 static CLOCK: OnceLock<Instant> = OnceLock::new();
 static SESSION_INACTIVE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 pub fn session_inactive() -> bool {
@@ -166,6 +169,7 @@ unsafe extern "system" fn subclass(
             }
             if wp.0 == WTS_SESSION_UNLOCK as usize {
                 SESSION_INACTIVE.store(false, Ordering::Release);
+                signals.invalidate();
             }
         }
         if message == WM_POWERBROADCAST {
@@ -179,9 +183,12 @@ unsafe extern "system" fn subclass(
             .contains(&wp.0)
             {
                 SESSION_INACTIVE.store(false, Ordering::Release);
+                signals.invalidate();
             }
         }
-        if [WM_DISPLAYCHANGE, WM_SETTINGCHANGE, WM_DPICHANGED].contains(&message) {
+        if [WM_DISPLAYCHANGE, WM_SETTINGCHANGE, WM_DPICHANGED].contains(&message)
+            || TASKBAR_CREATED.get() == Some(&message)
+        {
             signals.invalidate();
         }
         if message == WM_EXITSIZEMOVE {
@@ -231,6 +238,11 @@ pub fn install(address: usize, signals: Arc<Signals>) -> Result<(), String> {
         .map_err(|_| "Window manager already initialized")?;
     // SAFETY: Called during Tauri setup on the owning window thread; static
     // callback and identifier remain valid until WM_NCDESTROY removes them.
+    // SAFETY: Registers (or looks up) a named message with a static string.
+    let created = unsafe { RegisterWindowMessageW(windows::core::w!("TaskbarCreated")) };
+    if created != 0 {
+        let _ = TASKBAR_CREATED.set(created);
+    }
     if !unsafe { SetWindowSubclass(hwnd(address), Some(subclass), SUBCLASS_ID, 0) }.as_bool() {
         return Err("Could not attach display change listener".into());
     }

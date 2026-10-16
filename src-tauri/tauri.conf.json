@@ -10,26 +10,54 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{
-      "label": "main",
-      "title": "Isle",
-      "width": 560,
-      "height": 360,
-      "center": true,
-      "decorations": false,
-      "transparent": true,
-      "alwaysOnTop": true,
-      "skipTaskbar": true,
-      "shadow": false,
-      "resizable": false,
-      "focus": false,
-      "visible": false,
-      "dragDropEnabled": true
-    }],
+    "windows": [
+      {
+        "label": "main",
+        "title": "Isle",
+        "width": 560,
+        "height": 360,
+        "center": true,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false,
+        "resizable": false,
+        "focus": false,
+        "visible": false,
+        "dragDropEnabled": true
+      }
+    ],
     "security": {
-      "assetProtocol": {"enable":true,"scope":[]},
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      },
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; connect-src 'self' ipc: http://ipc.localhost; media-src 'self' https: blob:"
     }
   },
-  "bundle": { "active": true, "targets": ["nsis"], "icon": ["icons/icon.ico", "icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png"] }
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/icon.ico",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/SasyakSubudhi/isle/releases/latest/download/latest.json"
+      ],
+      "requireSignedVersion": false,
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
 }

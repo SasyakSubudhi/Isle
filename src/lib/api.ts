@@ -12,6 +12,9 @@ import type {
   Timer,
   FeatureSettings,
   MediaState,
+  BackupInfo,
+  RestoreSummary,
+  UpdateStatus,
 } from './types';
 
 function call<T>(command: string, args?: Record<string, unknown>): Promise<T> {
@@ -71,6 +74,12 @@ export const api = {
   download: (id: string, add: boolean) => call<void>('download_action', { id, add }),
   capture: () => call<void>('capture_start'),
   quit: () => call<void>('app_quit'),
+  backupCreate: () => call<BackupInfo>('backup_create'),
+  backupList: () => call<BackupInfo[]>('backup_list'),
+  backupRestore: (name: string) => call<RestoreSummary>('backup_restore', { name }),
+  backupFolder: () => call<void>('backup_open_folder'),
+  updateCheck: () => call<UpdateStatus>('update_check'),
+  updateInstall: () => call<void>('update_install'),
   on: <T>(event: string, handler: (payload: T) => void) =>
     listen<T>(event, (e) => handler(e.payload)),
   onDrop: (handler: (paths: string[]) => void, onHover: (active: boolean) => void) =>
