@@ -1,54 +1,18 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '../lib/hooks/useReducedMotion';
 import { ipc, nativeAvailable, type TaskbarSlot } from '../lib/ipc';
-import { api, asset, formatClock } from '../lib/api';
-import type { Download, FeatureSettings, MediaState, ShelfItem, Tab, Timer } from '../lib/types';
+import { api } from '../lib/api';
+import type { Tab } from '../lib/types';
 import { task, useApp } from '../app/store';
-import { IsleMark } from '../ui/IsleMark';
 import { Ambient } from './Ambient';
-import { Icon, type IconName } from '../ui/Icon';
-import { Empty, IconButton, ProgressRing } from '../ui/primitives';
-import { ShelfView } from '../modules/shelf/ShelfView';
-import { DictionaryView } from '../modules/dictionary/DictionaryView';
-import { ScreenTimeView } from '../modules/usage/ScreenTimeView';
-import { FocusView } from '../modules/focus/FocusView';
-import { NowPlayingView } from '../modules/media/NowPlayingView';
-import { NotesView } from '../modules/notes/NotesView';
-import { SettingsView } from '../modules/settings/SettingsView';
-
-const tabs: { id: Tab; label: string; icon: IconName }[] = [
-  { id: 'shelf', label: 'Shelf', icon: 'shelf' },
-  { id: 'usage', label: 'Screen time', icon: 'usage' },
-  { id: 'dictionary', label: 'Dictionary', icon: 'dictionary' },
-  { id: 'focus', label: 'Focus timer', icon: 'focus' },
-  { id: 'media', label: 'Now Playing', icon: 'media' },
-  { id: 'notes', label: 'Scratchpad', icon: 'notes' },
-];
-const views = {
-  shelf: ShelfView,
-  usage: ScreenTimeView,
-  dictionary: DictionaryView,
-  focus: FocusView,
-  media: NowPlayingView,
-  notes: NotesView,
-  settings: SettingsView,
-};
+import { IdlePill } from './IdlePill';
+import { Panel } from './Panel';
+import { tabs } from './islandTabs';
+import { useIsleEvents } from './useIsleEvents';
 
 export function IslandShell() {
-  const {
-    island,
-    data,
-    loading,
-    bootError,
-    toast,
-    capturing,
-    dispatch,
-    patch,
-    notify,
-    load,
-    refreshShelf,
-  } = useApp();
+  const { island, data, dispatch, notify, refreshShelf } = useApp();
   const shell = useRef<HTMLDivElement>(null);
   const [slot, setSlot] = useState<TaskbarSlot | null>(null);
   const [pageVisible, setPageVisible] = useState(() => !document.hidden);
@@ -109,150 +73,20 @@ export function IslandShell() {
         close();
     }, 600);
   };
-  useEffect(() => {
-    void load().then(() => {
-      if (useApp.getState().data?.open_on_start) open('shelf', true, true);
-    });
-    const update = () => setPageVisible(!document.hidden);
-    document.addEventListener('visibilitychange', update);
-    const scheme = matchMedia('(prefers-color-scheme: light)');
-    const theme = () => setSystemLight(scheme.matches);
-    scheme.addEventListener('change', theme);
-    if (!nativeAvailable)
-      return () => {
-        document.removeEventListener('visibilitychange', update);
-        scheme.removeEventListener('change', theme);
-      };
-    let disposed = false;
-    const stops: Promise<() => void>[] = [];
-    const watch = <T,>(event: string, handler: (payload: T) => void) =>
-      stops.push(
-        api.on<T>(event, (payload) => {
-          if (!disposed) handler(payload);
-        }),
-      );
-    stops.push(
-      ipc.onDisplayChanged((value) => {
-        if (!disposed) setSlot(value);
-      }),
-    );
-    void ipc
-      .getTaskbarSlot()
-      .then((value) => {
-        if (!disposed) setSlot(value);
-      })
-      .catch((e) => notify(String(e), true));
-    watch<boolean>('island://visibility', setNativeVisible);
-    watch<boolean>('island://pointer', (over) => (over ? enter() : exit()));
-    watch<boolean>('shelf://native-drop-hover', (active) => dispatch({ type: 'drag', active }));
-    watch<string>('island://hotkey', (name) => {
-      if (name === 'toggle') {
-        if (useApp.getState().island.mode === 'expanded') close();
-        else open(undefined, true, true);
-      } else
-        open(
-          name === 'usage'
-            ? 'usage'
-            : name === 'dictionary'
-              ? 'dictionary'
-              : name === 'settings'
-                ? 'settings'
-                : 'shelf',
-          true,
-          true,
-        );
-    });
-    watch<string>('dictionary://selection', (text) => {
-      useApp.setState({ selection: text });
-      open('dictionary', true, true);
-    });
-    watch<ShelfItem>('shelf://item-added', (item) => {
-      void refreshShelf();
-      if (!useApp.getState().data?.settings.presentation_mode)
-        dispatch({
-          type: 'peek',
-          notice: {
-            title: item.history ? 'Clipboard updated' : `${item.name} added`,
-            tab: 'shelf',
-          },
-        });
-    });
-    watch('shelf://changed', () => void refreshShelf());
-    watch<Download>('download://detected', (item) => {
-      const current = useApp.getState().data;
-      if (current) {
-        patch({ downloads: [...current.downloads.filter((d) => d.id !== item.id), item] });
-        if (!current.settings.presentation_mode)
-          dispatch({
-            type: 'peek',
-            notice: { title: item.name, tab: 'shelf', kind: 'download', downloadId: item.id },
-          });
-      }
-    });
-    watch<string>('download://error', (error) => notify(error, true));
-    watch<string>('app://error', (error) => notify(error, true));
-    watch<FeatureSettings>('settings://changed', (settings) => patch({ settings }));
-    watch<MediaState>('media://changed', (media) => patch({ media }));
-    watch<Timer>('timer://changed', (timer) => patch({ timer }));
-    watch<Timer>('timer://completed', (timer) => {
-      patch({ timer });
-      if (!useApp.getState().data?.settings.presentation_mode)
-        dispatch({
-          type: 'peek',
-          notice: {
-            title:
-              timer.phase === 'focus'
-                ? 'Focus complete. Time for a break.'
-                : 'Break complete. Ready when you are.',
-            tab: 'focus',
-          },
-        });
-    });
-    watch<{ id: string; name: string; minutes: number }>('usage://limit', (item) => {
-      if (!useApp.getState().data?.settings.presentation_mode)
-        dispatch({
-          type: 'peek',
-          notice: {
-            title: `${item.name} reached ${item.minutes} min`,
-            tab: 'usage',
-            kind: 'limit',
-            appId: item.id,
-          },
-        });
-    });
-    watch<boolean>('capture://state', (value) => useApp.setState({ capturing: value }));
-    watch('shelf://drag-finished', () => dispatch({ type: 'drag', active: false }));
-    stops.push(
-      api.onDrop(
-        (paths) => {
-          open('shelf', false, true);
-          void task(() => api.addFiles(paths)).then(() => refreshShelf());
-        },
-        (active) => dispatch({ type: 'drag', active }),
-      ),
-    );
-    for (const stop of stops) void stop.catch((e) => notify(String(e), true));
-    return () => {
-      disposed = true;
-      document.removeEventListener('visibilitychange', update);
-      scheme.removeEventListener('change', theme);
-      for (const stop of stops) void stop.then((unlisten) => unlisten()).catch(() => {});
+  useIsleEvents({
+    open,
+    close,
+    enter,
+    exit,
+    cancelTimers: () => {
       if (hover.current) clearTimeout(hover.current);
       if (leave.current) clearTimeout(leave.current);
-    };
-  }, []);
-  useEffect(() => {
-    if (!toast) return;
-    const timeout = setTimeout(() => useApp.setState({ toast: null }), toast.error ? 6500 : 2400);
-    return () => clearTimeout(timeout);
-  }, [toast]);
-  useEffect(() => {
-    if (island.mode !== 'peek') return;
-    const timeout = setTimeout(() => {
-      if (useApp.getState().island.mode === 'peek') close();
-    }, 5500);
-    return () => clearTimeout(timeout);
-  }, [island.mode, island.notice]);
+    },
+    setSlot,
+    setPageVisible,
+    setNativeVisible,
+    setSystemLight,
+  });
   const report = () => {
     if (!nativeAvailable || !shell.current) return;
     const r = shell.current.getBoundingClientRect();
@@ -306,7 +140,6 @@ export function IslandShell() {
       Math.max(6, anchorY < 170 ? anchorY - 18 : anchorY + 18 - height),
     );
   const activeTimer = data?.timer.status === 'running' || data?.timer.status === 'paused',
-    View = views[island.tab],
     title = island.tab === 'settings' ? 'Settings' : tabs.find((t) => t.id === island.tab)?.label;
   const theme =
     data?.settings.theme === 'system' || !data?.settings.theme
@@ -314,14 +147,6 @@ export function IslandShell() {
         ? 'light'
         : 'dark'
       : data.settings.theme;
-  const launch = (service: string) => {
-    if (!data?.settings.chrome_profile) {
-      open('settings', true, true);
-      notify('Choose your signed-in Chrome profile to open your accounts.');
-      return;
-    }
-    void task(() => api.chrome(service));
-  };
   return (
     <main
       className="island-canvas select-none"
@@ -416,324 +241,26 @@ export function IslandShell() {
         <Ambient quiet={privateMode} expanded={expanded} />
         <AnimatePresence initial={false} mode="wait">
           {!expanded ? (
-            <motion.div
+            <IdlePill
               key="idle"
-              className="island-content"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.07 } }}
-              whileTap={reduced || paused ? undefined : { scale: 0.97 }}
-              transition={{ duration: reduced ? 0.08 : 0.14 }}
-            >
-              <motion.span
-                className="idle-emblem"
-                initial={false}
-                animate={reduced || paused ? { scale: 1 } : { scale: engaged ? 1.08 : 1 }}
-                transition={
-                  reduced ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 26 }
-                }
-              >
-                {!privateMode && data?.media.playing && data.media.artwork ? (
-                  <img className="idle-album" src={asset(data.media.artwork)} alt="" />
-                ) : (
-                  <IsleMark
-                    state={
-                      peek
-                        ? 'notice'
-                        : activeTimer
-                          ? 'timer'
-                          : !privateMode && data?.media.playing
-                            ? 'media'
-                            : 'idle'
-                    }
-                    engaged={engaged}
-                  />
-                )}
-              </motion.span>
-              {peek ? (
-                <>
-                  <motion.span
-                    key={island.notice?.title}
-                    className="peek-copy"
-                    initial={reduced ? false : { opacity: 0, x: -6, filter: 'blur(3px)' }}
-                    animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                    transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
-                  >
-                    {island.notice?.title}
-                  </motion.span>
-                  {island.notice?.kind === 'download' && data?.downloads.length ? (
-                    <button
-                      className="peek-action"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void task(
-                          () => api.download(island.notice!.downloadId!, true),
-                          'Added to Shelf',
-                        ).then(async (ok) => {
-                          if (!ok) return;
-                          const next = await api.bootstrap();
-                          patch({ downloads: next.downloads, shelf: next.shelf });
-                          close();
-                        });
-                      }}
-                    >
-                      Add
-                    </button>
-                  ) : null}
-                </>
-              ) : activeTimer && data ? (
-                <>
-                  <span className="idle-timer">{formatClock(data.timer.remaining_seconds)}</span>
-                  <ProgressRing
-                    size={16}
-                    value={data.timer.remaining_seconds / data.timer.duration_seconds}
-                  />
-                </>
-              ) : !privateMode && data?.media.playing ? (
-                <>
-                  <span className="isle-wordmark">isle</span>
-                  <span className="waveform playing idle-wave" aria-hidden="true">
-                    {[6, 10, 7].map((n, i) => (
-                      <span key={i} style={{ height: n, animationDelay: `${i * -0.27}s` }} />
-                    ))}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <span className="isle-wordmark">isle</span>
-                  <span className="idle-tide" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                  </span>
-                </>
-              )}
-            </motion.div>
+              reduced={reduced}
+              paused={paused}
+              engaged={engaged}
+              peek={peek}
+              privateMode={privateMode}
+              activeTimer={activeTimer}
+              close={close}
+            />
           ) : (
-            <motion.div
+            <Panel
               key="panel"
-              className="panel-content"
-              initial={{ opacity: 0, y: reduced ? 0 : 5 }}
-              animate={{
-                opacity: 1,
-                y: 0,
-                transition: { delay: reduced ? 0 : 0.1, duration: 0.16 },
-              }}
-              exit={{ opacity: 0, transition: { duration: 0.07 } }}
-            >
-              <header className="panel-header">
-                <IsleMark state="idle" engaged={false} />
-                <span className="panel-name">isle</span>
-                <span className="header-divider" />
-                <span className="panel-title">{privateMode ? 'Presentation mode' : title}</span>
-                <span className="spacer" />
-                {!privateMode && (
-                  <IconButton
-                    icon="settings"
-                    label="Settings"
-                    active={island.tab === 'settings'}
-                    onClick={() => open('settings')}
-                  />
-                )}
-                <IconButton
-                  icon="pin"
-                  label={island.pinned ? 'Unpin panel' : 'Keep panel open'}
-                  active={island.pinned}
-                  onClick={() => dispatch({ type: 'pin' })}
-                />
-                <IconButton icon="close" label="Collapse Isle" onClick={close} />
-                <IconButton icon="power" label="Quit Isle" onClick={() => void task(api.quit)} />
-              </header>
-              {privateMode ? (
-                <div className="privacy-panel">
-                  <Empty
-                    icon="privacy"
-                    title="Your space stays private"
-                    action={
-                      <button
-                        className="primary-button"
-                        onClick={() =>
-                          void task(() => api.settingsPatch({ presentation_mode: false })).then(
-                            (settings) => {
-                              if (settings) patch({ settings });
-                            },
-                          )
-                        }
-                      >
-                        Exit presentation mode
-                      </button>
-                    }
-                  >
-                    Previews and notifications are hidden. Tracking and timers continue.
-                  </Empty>
-                  {activeTimer && data && (
-                    <span className="privacy-timer">
-                      {formatClock(data.timer.remaining_seconds)} remaining
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <nav className="tab-bar" aria-label="Isle tools">
-                    {tabs.map((tab) => (
-                      <button
-                        type="button"
-                        key={tab.id}
-                        aria-label={tab.label}
-                        aria-pressed={island.tab === tab.id}
-                        title={tab.label}
-                        onClick={() => open(tab.id)}
-                      >
-                        {island.tab === tab.id && (
-                          <motion.span
-                            layoutId="active-tab"
-                            className="tab-highlight"
-                            transition={
-                              reduced
-                                ? { duration: 0 }
-                                : { type: 'spring', stiffness: 400, damping: 32 }
-                            }
-                          />
-                        )}
-                        <Icon name={tab.icon} />
-                      </button>
-                    ))}
-                  </nav>
-                  {island.notice?.kind === 'limit' && (
-                    <div className="limit-notice" role="status">
-                      <span>{island.notice.title}</span>
-                      <button
-                        onClick={() =>
-                          void task(
-                            () => api.snooze(island.notice!.appId!),
-                            'Snoozed for 15 minutes',
-                          ).then((ok) => {
-                            if (ok)
-                              useApp.setState((s) => ({ island: { ...s.island, notice: null } }));
-                          })
-                        }
-                      >
-                        Snooze
-                      </button>
-                      <button
-                        onClick={() => {
-                          open('focus', true, true);
-                          useApp.setState((s) => ({ island: { ...s.island, notice: null } }));
-                          void task(() => api.timer('start')).then((timer) => {
-                            if (timer) patch({ timer });
-                          });
-                        }}
-                      >
-                        Focus
-                      </button>
-                      <IconButton
-                        icon="close"
-                        label="Dismiss reminder"
-                        onClick={() =>
-                          useApp.setState((s) => ({ island: { ...s.island, notice: null } }))
-                        }
-                      />
-                    </div>
-                  )}
-                  <div className="panel-body">
-                    {loading && !data ? (
-                      <div className="loading-state">
-                        <span className="spinner" />
-                        <p>Opening your local space…</p>
-                      </div>
-                    ) : bootError ? (
-                      <Empty
-                        icon="shelf"
-                        title={
-                          nativeAvailable ? 'Your space couldn’t open' : 'Open the Isle desktop app'
-                        }
-                        action={<button onClick={() => void load()}>Try again</button>}
-                      >
-                        {bootError}
-                      </Empty>
-                    ) : data ? (
-                      <motion.div
-                        key={island.tab}
-                        className="view-frame"
-                        initial={reduced ? false : { opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-                      >
-                        <View />
-                      </motion.div>
-                    ) : null}
-                    {island.dragging && (
-                      <div className="drop-overlay">
-                        <Icon name="shelf" size={32} />
-                        <strong>Drop it here</strong>
-                        <span>Files stay where they are.</span>
-                      </div>
-                    )}
-                  </div>
-                  <footer className="panel-footer">
-                    <div className="quick-launch">
-                      <button
-                        title="Open Gmail in your Chrome profile"
-                        onClick={() => launch('gmail')}
-                      >
-                        <Icon name="mail" size={15} />
-                        <span>Gmail</span>
-                      </button>
-                      <button
-                        title="Open Outlook in your Chrome profile"
-                        onClick={() => launch('outlook')}
-                      >
-                        <Icon name="mail" size={15} />
-                        <span>Outlook</span>
-                      </button>
-                      <button
-                        title="Open WhatsApp in your Chrome profile"
-                        onClick={() => launch('whatsapp')}
-                      >
-                        <Icon name="chat" size={15} />
-                        <span>WhatsApp</span>
-                      </button>
-                    </div>
-                    <span className="spacer" />
-                    <IconButton
-                      icon="privacy"
-                      label="Enable presentation mode"
-                      onClick={() => {
-                        if (data)
-                          void task(() => api.settingsPatch({ presentation_mode: true })).then(
-                            (settings) => {
-                              if (settings) patch({ settings });
-                            },
-                          );
-                      }}
-                    />
-                  </footer>
-                </>
-              )}
-              {capturing && (
-                <div className="capture-status" role="status">
-                  Finish your screen snip. It will arrive on Shelf.
-                </div>
-              )}
-              <AnimatePresence>
-                {toast && !privateMode && (
-                  <motion.div
-                    key={toast.message}
-                    className={`toast ${toast.error ? 'error' : ''}`}
-                    role={toast.error ? 'alert' : 'status'}
-                    initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: reduced ? 0 : 6, transition: { duration: 0.12 } }}
-                    transition={
-                      reduced ? { duration: 0.1 } : { type: 'spring', stiffness: 520, damping: 34 }
-                    }
-                  >
-                    <Icon name={toast.error ? 'close' : 'check'} size={14} />
-                    {toast.message}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+              reduced={reduced}
+              privateMode={privateMode}
+              activeTimer={activeTimer}
+              title={title}
+              open={open}
+              close={close}
+            />
           )}
         </AnimatePresence>
       </motion.div>
