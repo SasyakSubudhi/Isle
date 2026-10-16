@@ -6,10 +6,11 @@
 [data-theme="light"] .island-pill:hover .isle-wordmark { color:#09090b; }
 [data-theme="light"] .isle-mark-dot { background:#27272a; }
 [data-theme="light"] .isle-mark-halo { border-color:#0000002e; }
-[data-theme="light"] .idle-hint { background:#00000059; }
-[data-theme="light"] .wave-front { stroke:#0000001f; }
-[data-theme="light"] .wave-back { stroke:#00000012; }
-[data-theme="light"] .ambient-mote { background:#00000040; }
+[data-theme="light"] .idle-tide span { background:#27272a; }
+[data-theme="light"] .wave-back .wave-fill { fill:#00000006; } [data-theme="light"] .wave-back .wave-line { stroke:#00000017; }
+[data-theme="light"] .wave-mid .wave-fill { fill:#00000008; } [data-theme="light"] .wave-mid .wave-line { stroke:#00000021; }
+[data-theme="light"] .wave-front .wave-fill { fill:#0000000a; } [data-theme="light"] .wave-front .wave-line { stroke:#0000002e; }
+[data-theme="light"] .ambient-mote { background:#00000059; box-shadow:none; }
 [data-theme="light"] .isle-mark-ripple { border-color:#00000033; }
 [data-theme="light"] .ambient-sheen { background:linear-gradient(90deg,transparent,#ffffffb3,transparent); }
 [data-theme="light"] .ambient-edge { background:linear-gradient(90deg,transparent,#ffffff,transparent); }
