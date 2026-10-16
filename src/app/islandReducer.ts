@@ -1,9 +1,13 @@
 import type { Tab } from '../lib/types';
 export interface IslandState {
-  mode: 'idle' | 'peek' | 'expanded';
+  /** `dock` is the compact tray of files dropped on the pill. */
+  mode: 'idle' | 'peek' | 'expanded' | 'dock';
   tab: Tab;
   pinned: boolean;
+  /** Isle is dragging files out into another app. */
   dragging: boolean;
+  /** Files from another app are being dragged over the island. */
+  dropHover: boolean;
   notice: { title: string; tab: Tab; appId?: string; downloadId?: string; kind?: string } | null;
 }
 export type Action =
@@ -12,12 +16,15 @@ export type Action =
   | { type: 'toggle' }
   | { type: 'pin' }
   | { type: 'drag'; active: boolean }
+  | { type: 'dropHover'; active: boolean }
+  | { type: 'dock' }
   | { type: 'peek'; notice: NonNullable<IslandState['notice']> };
 export const initialIsland: IslandState = {
   mode: 'idle',
   tab: 'shelf',
   pinned: false,
   dragging: false,
+  dropHover: false,
   notice: null,
 };
 export function reduceIsland(state: IslandState, action: Action): IslandState {
@@ -38,16 +45,22 @@ export function reduceIsland(state: IslandState, action: Action): IslandState {
     case 'pin':
       return { ...state, pinned: !state.pinned };
     case 'drag':
+      return { ...state, dragging: action.active };
+    case 'dropHover':
+      // The collapsed pill reacts in place; an open panel switches to Shelf.
+      if (state.dropHover === action.active) return state;
       return {
         ...state,
-        dragging: action.active,
-        ...(action.active ? { mode: 'expanded' as const, tab: 'shelf' as const } : {}),
+        dropHover: action.active,
+        ...(action.active && state.mode === 'expanded' ? { tab: 'shelf' as const } : {}),
       };
+    case 'dock':
+      return state.mode === 'expanded' ? state : { ...state, mode: 'dock' };
     case 'peek':
       return {
         ...state,
         notice: action.notice,
-        mode: state.mode === 'expanded' ? 'expanded' : 'peek',
+        mode: state.mode === 'expanded' || state.mode === 'dock' ? state.mode : 'peek',
       };
   }
 }

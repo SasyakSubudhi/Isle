@@ -95,6 +95,10 @@ impl WindowManager {
     pub fn external_drag(&self, active: bool) {
         self.0.external_drag.store(active, Ordering::Release);
     }
+    /// True while Isle itself is dragging files out, so its own drop target can refuse them.
+    pub fn dragging_out(&self) -> bool {
+        self.0.external_drag.load(Ordering::Acquire)
+    }
     pub fn slot(&self) -> Result<Option<Slot>, String> {
         Ok(self
             .0

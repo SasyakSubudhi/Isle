@@ -1,0 +1,214 @@
+/* File dock: the pill's drop feedback, its tray and the idle count. */
+
+/* Drag hovering over the island: a soft signal ring that breathes. */
+.island-pill.island-shell.is-drop-target {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--signal) 70%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--signal) 18%, transparent),
+    0 10px 26px -6px #00000099;
+  animation: dock-ring 1.4s var(--ease-soft) infinite;
+}
+.dock-drop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+}
+.dock-drop strong {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.dock-drop small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.dock-drop-icon {
+  display: inline-flex;
+  color: var(--signal);
+  animation: dock-bob 1s var(--ease-soft) infinite;
+}
+
+/* The tray: files waiting on the dock, ready to drag back out. */
+.island-shell.is-dock {
+  padding: 0 8px 0 10px;
+}
+.dock-tray {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+.dock-all {
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 40px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--control-hover);
+  cursor: grab;
+}
+.dock-all strong {
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+}
+.dock-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.dock-tile {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: var(--control-hover);
+  color: var(--muted);
+  overflow: hidden;
+  cursor: grab;
+  transition: transform 0.2s var(--ease-out);
+}
+.dock-tile:hover {
+  transform: translateY(-2px);
+  color: var(--text);
+}
+.dock-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.dock-tile-name {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1px 3px;
+  font-size: 8.5px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: #000000a6;
+  color: #f4f4f5;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.dock-tile:hover .dock-tile-name {
+  opacity: 1;
+}
+.dock-tile.missing {
+  cursor: pointer;
+  opacity: 0.45;
+  outline: 1px dashed #ffffff40;
+  outline-offset: -1px;
+}
+.dock-more {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+}
+.dock-actions {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 2px;
+}
+.dock-actions .icon-button {
+  min-height: 24px;
+  width: 24px;
+  padding: 3px;
+}
+.dock-actions .icon-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Idle pill with files on the dock: a small count where the tide sits. */
+.island-pill.has-dock .idle-tide {
+  visibility: hidden;
+}
+.dock-badge {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 11px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: #0d0d0f;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+[data-theme='light'] .dock-tile.missing {
+  outline-color: #00000040;
+}
+[data-theme='light'] .dock-badge {
+  color: #f4f4f5;
+  background: #27272a;
+}
+
+@keyframes dock-ring {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--signal) 70%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--signal) 14%, transparent),
+      0 10px 26px -6px #00000099;
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px var(--signal),
+      0 0 0 5px color-mix(in srgb, var(--signal) 22%, transparent),
+      0 10px 26px -6px #00000099;
+  }
+}
+@keyframes dock-bob {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+.island-canvas[data-motion-paused='true'] .is-drop-target,
+.island-canvas[data-motion-paused='true'] .dock-drop-icon {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .island-pill.is-drop-target,
+  .dock-drop-icon {
+    animation: none;
+  }
+  .dock-tile,
+  .dock-tile:hover {
+    transform: none;
+    transition: none;
+  }
+}

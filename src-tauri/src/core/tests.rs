@@ -252,3 +252,70 @@ fn chrome_executable_must_be_chrome() {
         assert!(settings.validate_chrome_executable().is_err(), "{bad}");
     }
 }
+#[test]
+fn dock_keeps_newest_first_and_drops_removed_shelf_items() {
+    let fixture = Fixture::new();
+    let files = ["a.txt", "b.txt", "c.txt"].map(|name| {
+        let path = fixture.root.join(name);
+        fs::write(&path, name).unwrap();
+        path.to_string_lossy().to_string()
+    });
+    let first = fixture
+        .core
+        .shelf_files(vec![files[0].clone()], false)
+        .unwrap();
+    fixture.core.dock_add(&[first[0].id.clone()]).unwrap();
+    let later = fixture
+        .core
+        .shelf_files(vec![files[1].clone(), files[2].clone()], false)
+        .unwrap();
+    let ids = later.iter().map(|i| i.id.clone()).collect::<Vec<_>>();
+    let docked = fixture.core.dock_add(&ids).unwrap();
+    let names = docked.iter().map(|i| i.name.as_str()).collect::<Vec<_>>();
+    assert_eq!(names, ["b.txt", "c.txt", "a.txt"]);
+    // Re-docking moves an item to the front without duplicating it.
+    let docked = fixture.core.dock_add(&[first[0].id.clone()]).unwrap();
+    assert_eq!(docked.len(), 3);
+    assert_eq!(docked[0].name, "a.txt");
+    // Removing from the Shelf also removes from the dock.
+    fixture.core.shelf_remove(&ids[0], true).unwrap();
+    assert_eq!(fixture.core.dock_list().unwrap().len(), 2);
+    // Undocking leaves the Shelf item alone.
+    fixture.core.dock_remove(&[first[0].id.clone()]).unwrap();
+    assert_eq!(fixture.core.dock_list().unwrap().len(), 1);
+    assert!(fixture.core.shelf_item(&first[0].id).is_ok());
+    fixture.core.dock_clear().unwrap();
+    assert!(fixture.core.dock_list().unwrap().is_empty());
+}
+#[test]
+fn dock_drag_skips_moved_files_and_ignores_text() {
+    let fixture = Fixture::new();
+    let kept = fixture.root.join("kept.txt");
+    let moved = fixture.root.join("moved.txt");
+    fs::write(&kept, b"kept").unwrap();
+    fs::write(&moved, b"moved").unwrap();
+    let items = fixture
+        .core
+        .shelf_files(
+            vec![
+                kept.to_string_lossy().into(),
+                moved.to_string_lossy().into(),
+            ],
+            false,
+        )
+        .unwrap();
+    let text = fixture.core.shelf_text("not a file".into(), false).unwrap();
+    let mut ids = items.iter().map(|i| i.id.clone()).collect::<Vec<_>>();
+    ids.push(text.id.clone());
+    assert_eq!(fixture.core.dock_add(&ids).unwrap().len(), 2);
+    fs::rename(&moved, fixture.root.join("elsewhere.txt")).unwrap();
+    let listed = fixture.core.dock_list().unwrap();
+    assert!(listed.iter().any(|i| i.name == "moved.txt" && i.missing));
+    let paths = fixture.core.dock_paths(&ids).unwrap();
+    assert_eq!(paths.paths, vec![kept.clone()]);
+    assert_eq!(paths.ids, vec![items[0].id.clone()]);
+    assert_eq!(paths.missing, vec!["moved.txt".to_string()]);
+    // The original file is never touched by docking or undocking.
+    fixture.core.dock_clear().unwrap();
+    assert!(kept.exists());
+}

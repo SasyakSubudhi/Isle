@@ -22,13 +22,35 @@ test('explicit opening selects a tool and closing clears private previews and pi
   assert.equal(closed.pinned, false);
   assert.equal(closed.mode, 'idle');
 });
-test('incoming drag opens Shelf without overwriting persistent panel pin', () => {
+test('incoming drag switches an open panel to Shelf without overwriting its pin', () => {
   const state = reduce(initialIsland, { type: 'open', tab: 'media', pin: true });
-  const dragging = reduce(state, { type: 'drag', active: true });
-  assert.equal(dragging.tab, 'shelf');
-  assert.equal(dragging.mode, 'expanded');
-  assert.equal(dragging.pinned, true);
-  assert.equal(reduce(dragging, { type: 'drag', active: false }).dragging, false);
+  const hovering = reduce(state, { type: 'dropHover', active: true });
+  assert.equal(hovering.tab, 'shelf');
+  assert.equal(hovering.mode, 'expanded');
+  assert.equal(hovering.pinned, true);
+  assert.equal(reduce(hovering, { type: 'dropHover', active: false }).dropHover, false);
+});
+test('incoming drag over the collapsed pill reacts in place instead of opening the panel', () => {
+  const hovering = reduce(initialIsland, { type: 'dropHover', active: true });
+  assert.equal(hovering.mode, 'idle');
+  assert.equal(hovering.dropHover, true);
+  assert.equal(reduce(hovering, { type: 'dropHover', active: true }), hovering);
+});
+test('dragging out keeps the current view', () => {
+  const dock = reduce(initialIsland, { type: 'dock' });
+  const dragging = reduce(dock, { type: 'drag', active: true });
+  assert.equal(dragging.mode, 'dock');
+  assert.equal(dragging.dragging, true);
+});
+test('dock tray opens from the pill, survives peeks and never replaces the panel', () => {
+  const dock = reduce(initialIsland, { type: 'dock' });
+  assert.equal(dock.mode, 'dock');
+  const peeked = reduce(dock, { type: 'peek', notice: { title: 'a.txt added', tab: 'shelf' } });
+  assert.equal(peeked.mode, 'dock');
+  const open = reduce(initialIsland, { type: 'open', tab: 'notes' });
+  assert.equal(reduce(open, { type: 'dock' }), open);
+  assert.equal(reduce(dock, { type: 'open', tab: 'shelf' }).mode, 'expanded');
+  assert.equal(reduce(dock, { type: 'close' }).mode, 'idle');
 });
 test('switching tools preserves an explicitly pinned workspace', () => {
   const pinned = reduce(initialIsland, { type: 'open', tab: 'shelf', pin: true });
