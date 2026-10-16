@@ -258,7 +258,7 @@ export function SettingsView() {
           >
             <option value="tide">Tide · monochrome waves</option>
             <option value="still">Still · no motion, just the wordmark</option>
-            <option value="aurora">Aurora · slow soft colour</option>
+            <option value="evergreen">Evergreen · tide waves in deep pine green</option>
             <option value="outline">Outline · hairline glass</option>
           </select>
         </label>

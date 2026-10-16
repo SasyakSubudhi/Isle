@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, fs};
 
 /// Pill looks. `tide` is the original monochrome wave and the default.
-pub const PILL_THEMES: [&str; 4] = ["tide", "still", "aurora", "outline"];
+pub const PILL_THEMES: [&str; 4] = ["tide", "still", "evergreen", "outline"];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -167,6 +167,11 @@ pub fn load() -> Result<FeatureSettings, String> {
         .transpose()
         .map_err(|e| e.to_string())?
         .unwrap_or_default();
+    let mut settings: FeatureSettings = settings;
+    // Aurora was replaced by Evergreen; carry existing choices over.
+    if settings.pill_theme == "aurora" {
+        settings.pill_theme = "evergreen".into();
+    }
     FeatureSettings::validate(&settings)?;
     Ok(settings)
 }

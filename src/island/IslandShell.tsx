@@ -1,4 +1,5 @@
 import { useLayoutEffect, useEffect, useRef, useState } from 'react';
+import { pillSize } from './pillSize';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useReducedMotion } from '../lib/hooks/useReducedMotion';
 import { ipc, nativeAvailable, type TaskbarSlot } from '../lib/ipc';
@@ -163,16 +164,10 @@ export function IslandShell() {
     [],
   );
   const pillWidth = slot?.pill_width ?? 148;
-  const width = expanded
-      ? 432
-      : dropping
-        ? Math.max(212, pillWidth + 64)
-        : dock
-          ? 324
-          : peek
-            ? 292
-            : Math.max(pillWidth, live ? 236 : mediaPlaying ? 200 : 0),
-    height = expanded ? 324 : dropping ? 46 : dock ? 64 : peek ? 48 : 36;
+  const { width, height } = pillSize(
+    { expanded, dropping, dock, peek, live: !!live, mediaPlaying },
+    pillWidth,
+  );
   const frameWidth = slot ? 560 : window.innerWidth,
     frameHeight = slot ? 360 : window.innerHeight,
     anchorX = slot?.anchor_x ?? frameWidth / 2,

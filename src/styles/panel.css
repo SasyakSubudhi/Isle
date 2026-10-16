@@ -387,8 +387,40 @@
   color: var(--muted);
   background: transparent;
 }
-.quick-launch button:hover {
+.quick-launch button:hover,
+.quick-launch button:focus-visible {
   color: var(--text);
+  background: color-mix(in srgb, var(--brand, var(--text)) 14%, transparent);
+}
+/* Each shortcut carries a quiet tint of its app's colour on the icon. */
+.quick-launch button[data-app='gmail'] {
+  --brand: #f28b82;
+}
+.quick-launch button[data-app='youtube'] {
+  --brand: #ff6b6b;
+}
+.quick-launch button[data-app='whatsapp'] {
+  --brand: #5fd38d;
+}
+[data-theme='light'] .quick-launch button[data-app='gmail'] {
+  --brand: #c5221f;
+}
+[data-theme='light'] .quick-launch button[data-app='youtube'] {
+  --brand: #cc0000;
+}
+[data-theme='light'] .quick-launch button[data-app='whatsapp'] {
+  --brand: #128c4a;
+}
+.quick-launch button svg {
+  color: var(--brand, currentColor);
+  opacity: 0.85;
+  transition:
+    opacity 0.2s var(--ease-soft),
+    transform 0.2s var(--ease-out);
+}
+.quick-launch button:hover svg {
+  opacity: 1;
+  transform: translateY(-1px);
 }
 
 .empty-state {

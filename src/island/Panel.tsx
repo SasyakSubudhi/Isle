@@ -186,19 +186,28 @@ export function Panel({
           </div>
           <footer className="panel-footer">
             <div className="quick-launch">
-              <button title="Open Gmail in your Chrome profile" onClick={() => launch('gmail')}>
-                <Icon name="mail" size={15} />
+              <button
+                data-app="gmail"
+                title="Open Gmail in your Chrome profile"
+                onClick={() => launch('gmail')}
+              >
+                <Icon name="gmail" size={15} />
                 <span>Gmail</span>
               </button>
-              <button title="Open YouTube in your Chrome profile" onClick={() => launch('youtube')}>
+              <button
+                data-app="youtube"
+                title="Open YouTube in your Chrome profile"
+                onClick={() => launch('youtube')}
+              >
                 <Icon name="youtube" size={15} />
                 <span>YouTube</span>
               </button>
               <button
+                data-app="whatsapp"
                 title="Open WhatsApp in your Chrome profile"
                 onClick={() => launch('whatsapp')}
               >
-                <Icon name="chat" size={15} />
+                <Icon name="whatsapp" size={15} />
                 <span>WhatsApp</span>
               </button>
             </div>

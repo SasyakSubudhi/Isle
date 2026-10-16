@@ -1,5 +1,5 @@
 /* Pill styles, chosen in Settings → Pill & widgets. "tide" (the monochrome
-   waves) is the default and needs no rules here. Each style changes only the
+   waves) is the default and needs no rules here; "evergreen" is its green twin. Each style changes only the
    collapsed pill; the expanded panel keeps its solid surface for legibility. */
 
 /* Still: no ambient motion at all, just the wordmark on a matte capsule. */
@@ -14,37 +14,63 @@
   opacity: 0.45;
 }
 
-/* Aurora: waves give way to slow, very soft colour drifting under the glass. */
-[data-pill-theme='aurora'] .ambient-waves,
-[data-pill-theme='aurora'] .ambient-mote {
-  display: none;
+/* Evergreen: Tide's waves, slowed a touch and tinted deep pine, with motes
+   that glow faintly like fireflies over water. */
+[data-pill-theme='evergreen'] .island-pill:not(.is-expanded) {
+  background: color-mix(in srgb, #0f2a22 38%, var(--surface));
 }
-[data-pill-theme='aurora'] .ambient::before {
-  content: '';
-  position: absolute;
-  inset: -60% -20%;
-  background:
-    radial-gradient(40% 70% at 20% 60%, #6d8cff2e, transparent 70%),
-    radial-gradient(35% 60% at 55% 40%, #5fd4c426, transparent 70%),
-    radial-gradient(40% 70% at 85% 55%, #b48cff26, transparent 70%);
-  filter: blur(6px);
-  animation: aurora-drift 18s ease-in-out infinite alternate;
+[data-pill-theme='evergreen'] .wave-back .wave-fill {
+  fill: #3fbf8a0d;
 }
-[data-theme='light'][data-pill-theme='aurora'] .ambient::before {
-  opacity: 0.8;
-  mix-blend-mode: multiply;
+[data-pill-theme='evergreen'] .wave-back .wave-line {
+  stroke: #5fd3a22b;
 }
-[data-pill-theme='aurora'] .ambient.is-expanded::before,
-[data-pill-theme='aurora'] .ambient.is-quiet::before {
-  display: none;
+[data-pill-theme='evergreen'] .wave-mid .wave-fill {
+  fill: #3fbf8a12;
 }
-@keyframes aurora-drift {
-  from {
-    transform: translateX(-8%) scale(1);
-  }
-  to {
-    transform: translateX(8%) scale(1.08);
-  }
+[data-pill-theme='evergreen'] .wave-mid .wave-line {
+  stroke: #6fdcae3d;
+}
+[data-pill-theme='evergreen'] .wave-front .wave-fill {
+  fill: #4fcf9a17;
+}
+[data-pill-theme='evergreen'] .wave-front .wave-line {
+  stroke: #8fe8c055;
+}
+[data-pill-theme='evergreen'] .wave-back {
+  animation-duration: 19s;
+}
+[data-pill-theme='evergreen'] .wave-mid {
+  animation-duration: 13s;
+}
+[data-pill-theme='evergreen'] .wave-front {
+  animation-duration: 9s;
+}
+[data-pill-theme='evergreen'] .ambient-mote {
+  background: #c8f5dcb3;
+  box-shadow: 0 0 4px #7fe0b080;
+}
+[data-pill-theme='evergreen'] .ambient-edge {
+  background: linear-gradient(90deg, transparent, #9ff0c855, transparent);
+}
+[data-theme='light'][data-pill-theme='evergreen'] .island-pill:not(.is-expanded) {
+  background: color-mix(in srgb, #dff3e8 55%, var(--surface));
+}
+[data-theme='light'][data-pill-theme='evergreen'] .wave-back .wave-line {
+  stroke: #1f7a5333;
+}
+[data-theme='light'][data-pill-theme='evergreen'] .wave-mid .wave-line {
+  stroke: #1f7a5347;
+}
+[data-theme='light'][data-pill-theme='evergreen'] .wave-front .wave-fill {
+  fill: #1f7a5312;
+}
+[data-theme='light'][data-pill-theme='evergreen'] .wave-front .wave-line {
+  stroke: #1f7a5366;
+}
+[data-theme='light'][data-pill-theme='evergreen'] .ambient-mote {
+  background: #1f7a5366;
+  box-shadow: none;
 }
 
 /* Outline: a see-through capsule with a crisp hairline. */
@@ -63,15 +89,6 @@
 [data-pill-theme='outline'] .ambient-waves,
 [data-pill-theme='outline'] .ambient-mote {
   display: none;
-}
-
-.island-canvas[data-motion-paused='true'] .ambient::before {
-  animation-play-state: paused;
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-pill-theme='aurora'] .ambient::before {
-    animation: none;
-  }
 }
 
 /* Context-aware pill: what you're doing and for how long. */

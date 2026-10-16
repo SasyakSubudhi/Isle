@@ -31,7 +31,7 @@ export interface FeatureSettings {
   weather_place: string;
   weather_fahrenheit: boolean;
 }
-export type PillTheme = 'tide' | 'still' | 'aurora' | 'outline';
+export type PillTheme = 'tide' | 'still' | 'evergreen' | 'outline';
 export interface ShelfItem {
   id: string;
   kind: 'file' | 'image' | 'text' | 'link';
