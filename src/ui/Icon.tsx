@@ -32,6 +32,7 @@ const paths = {
   previous: 'M19 5L9 12l10 7z M5 5v14',
   volume: 'M3 9h4l5-4v14l-5-4H3z M16 8a6 6 0 0 1 0 8',
   mail: 'M3 5h18v14H3z M3 5l9 8 9-8',
+  youtube: 'M3 7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z M10 9l5 3-5 3z',
   chat: 'M4 4h16v13H9l-5 4z M8 8h8 M8 12h5',
   chrome:
     'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M12 3l5 9 M4 7h10 M7 20l5-8',

@@ -21,7 +21,7 @@ pub struct FeatureSettings {
     pub chrome_executable: String,
     pub chrome_profile: String,
     pub gmail_url: String,
-    pub outlook_url: String,
+    pub youtube_url: String,
     pub whatsapp_url: String,
     pub focus_minutes: u32,
     pub short_break_minutes: u32,
@@ -56,7 +56,7 @@ impl Default for FeatureSettings {
             chrome_executable: String::new(),
             chrome_profile: String::new(),
             gmail_url: "https://mail.google.com/mail/u/0/".into(),
-            outlook_url: "https://outlook.live.com/mail/0/".into(),
+            youtube_url: "https://www.youtube.com/".into(),
             whatsapp_url: "https://web.whatsapp.com/".into(),
             focus_minutes: 25,
             short_break_minutes: 5,
@@ -113,7 +113,7 @@ impl FeatureSettings {
         if self.weather_place.chars().count() > 80 {
             return Err("Weather place must be at most 80 characters".into());
         }
-        for url in [&self.gmail_url, &self.outlook_url, &self.whatsapp_url] {
+        for url in [&self.gmail_url, &self.youtube_url, &self.whatsapp_url] {
             let parsed = reqwest::Url::parse(url).map_err(|_| "Shortcut URL is invalid")?;
             if parsed.scheme() != "https" {
                 return Err("Chrome shortcuts require HTTPS URLs".into());

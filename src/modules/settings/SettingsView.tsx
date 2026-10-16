@@ -140,7 +140,7 @@ export function SettingsView() {
       <div className="settings-group">
         <h4>Chrome shortcuts</h4>
         <p>
-          Choose the Chrome profile that already has your Gmail, Outlook and WhatsApp accounts
+          Choose the Chrome profile that already has your Gmail, YouTube and WhatsApp accounts
           signed in.
         </p>
         <label>
@@ -176,13 +176,9 @@ export function SettingsView() {
           />
           <small>Leave empty to use the detected Chrome. Only chrome.exe is allowed.</small>
         </label>
-        {(['gmail_url', 'outlook_url', 'whatsapp_url'] as const).map((key) => (
+        {(['gmail_url', 'youtube_url', 'whatsapp_url'] as const).map((key) => (
           <label key={key}>
-            {key === 'gmail_url'
-              ? 'Gmail'
-              : key === 'outlook_url'
-                ? 'Outlook (change for work/school)'
-                : 'WhatsApp'}
+            {key === 'gmail_url' ? 'Gmail' : key === 'youtube_url' ? 'YouTube' : 'WhatsApp'}
             <input value={draft[key]} onChange={(e) => field(key, e.target.value)} />
           </label>
         ))}

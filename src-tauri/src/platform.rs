@@ -315,7 +315,7 @@ pub fn chrome_open(
     }
     let url = match service {
         "gmail" => &settings.gmail_url,
-        "outlook" => &settings.outlook_url,
+        "youtube" => &settings.youtube_url,
         "whatsapp" => &settings.whatsapp_url,
         _ => return Err("Unknown shortcut".into()),
     };

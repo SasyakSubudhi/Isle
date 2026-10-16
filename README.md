@@ -44,9 +44,9 @@ Settings, pauses tracking, controls presentation mode and quits the app.
 - **Scratchpad:** create, pin and edit notes that autosave locally and do not
   expire with Shelf items.
 
-The Gmail, Outlook and WhatsApp buttons open Chrome. First select your existing
+The Gmail, YouTube and WhatsApp buttons open Chrome. First select your existing
 signed-in profile in Settings; account credentials are never stored by Isle.
-Outlook's URL is editable for work/school accounts. Presentation mode hides
+You can change each shortcut's URL in Settings. Presentation mode hides
 previews and notifications until explicitly exited while timers/tracking run.
 
 Defaults: Ctrl+Alt+Space toggles Isle, Ctrl+Alt+D opens Dictionary, Ctrl+Alt+S

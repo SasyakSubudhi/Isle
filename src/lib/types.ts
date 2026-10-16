@@ -13,7 +13,7 @@ export interface FeatureSettings {
   chrome_executable: string;
   chrome_profile: string;
   gmail_url: string;
-  outlook_url: string;
+  youtube_url: string;
   whatsapp_url: string;
   focus_minutes: number;
   short_break_minutes: number;

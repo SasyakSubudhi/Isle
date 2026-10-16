@@ -190,9 +190,9 @@ export function Panel({
                 <Icon name="mail" size={15} />
                 <span>Gmail</span>
               </button>
-              <button title="Open Outlook in your Chrome profile" onClick={() => launch('outlook')}>
-                <Icon name="mail" size={15} />
-                <span>Outlook</span>
+              <button title="Open YouTube in your Chrome profile" onClick={() => launch('youtube')}>
+                <Icon name="youtube" size={15} />
+                <span>YouTube</span>
               </button>
               <button
                 title="Open WhatsApp in your Chrome profile"
