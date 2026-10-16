@@ -10,6 +10,8 @@ import { IdlePill } from './IdlePill';
 import { Panel } from './Panel';
 import { tabs } from './islandTabs';
 import { useIsleEvents } from './useIsleEvents';
+import { DockBadge, DockDrop, DockTray } from '../modules/dock/DockViews';
+import { useDock, useDockEvents } from '../modules/dock/dock';
 
 export function IslandShell() {
   const { island, data, dispatch, notify, refreshShelf } = useApp();
@@ -26,6 +28,9 @@ export function IslandShell() {
   const privateMode = !!data?.settings.presentation_mode;
   const expanded = island.mode === 'expanded';
   const peek = island.mode === 'peek' && !privateMode;
+  const docked = useDock((s) => s.items.length);
+  const dock = island.mode === 'dock' && !privateMode && docked > 0;
+  const dropping = island.dropHover && !expanded;
   const paused = !pageVisible || !nativeVisible;
   const leave = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hover = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,7 +58,15 @@ export function IslandShell() {
     setEngaged(true);
     if (leave.current) clearTimeout(leave.current);
     const current = useApp.getState();
-    if (current.island.mode !== 'expanded' && current.data?.settings.hover_expand) {
+    // Files waiting on the dock take priority over hover-to-expand.
+    if (
+      current.island.mode === 'idle' &&
+      useDock.getState().items.length &&
+      !current.data?.settings.presentation_mode
+    ) {
+      if (hover.current) clearTimeout(hover.current);
+      hover.current = setTimeout(() => dispatch({ type: 'dock' }), 150);
+    } else if (current.island.mode !== 'expanded' && current.data?.settings.hover_expand) {
       if (hover.current) clearTimeout(hover.current);
       hover.current = setTimeout(() => open(undefined, false), 150);
     }
@@ -67,6 +80,7 @@ export function IslandShell() {
       if (
         !current.island.pinned &&
         !current.island.dragging &&
+        !current.island.dropHover &&
         !current.capturing &&
         !(document.hasFocus() && document.activeElement?.matches('input,textarea,select'))
       )
@@ -86,6 +100,13 @@ export function IslandShell() {
     setPageVisible,
     setNativeVisible,
     setSystemLight,
+  });
+  useEffect(() => {
+    // Everything was dragged out or cleared: fold the tray back into the pill.
+    if (island.mode === 'dock' && !dock && !island.dragging) close();
+  }, [island.mode, dock, island.dragging]); // eslint-disable-line react-hooks/exhaustive-deps
+  useDockEvents(() => {
+    if (!useApp.getState().data?.settings.presentation_mode) dispatch({ type: 'dock' });
   });
   const report = () => {
     if (!nativeAvailable || !shell.current) return;
@@ -111,7 +132,7 @@ export function IslandShell() {
       observer.disconnect();
       window.removeEventListener('resize', report);
     };
-  }, [slot, expanded, peek]);
+  }, [slot, expanded, peek, dock, dropping]);
   const trackAnimation = () => {
     if (hitFrame.current) cancelAnimationFrame(hitFrame.current);
     const started = performance.now();
@@ -128,8 +149,17 @@ export function IslandShell() {
     },
     [],
   );
-  const width = expanded ? 432 : peek ? 292 : (slot?.pill_width ?? 148),
-    height = expanded ? 324 : peek ? 48 : 36;
+  const pillWidth = slot?.pill_width ?? 148;
+  const width = expanded
+      ? 432
+      : dropping
+        ? Math.max(212, pillWidth + 64)
+        : dock
+          ? 324
+          : peek
+            ? 292
+            : pillWidth,
+    height = expanded ? 324 : dropping ? 46 : dock ? 64 : peek ? 48 : 36;
   const frameWidth = slot ? 560 : window.innerWidth,
     frameHeight = slot ? 360 : window.innerHeight,
     anchorX = slot?.anchor_x ?? frameWidth / 2,
@@ -156,7 +186,7 @@ export function IslandShell() {
       <motion.div
         ref={shell}
         layout
-        className={`island-pill island-shell ${expanded ? 'is-expanded' : peek ? 'is-peek' : ''} ${island.dragging ? 'is-drop-target' : ''}`}
+        className={`island-pill island-shell ${expanded ? 'is-expanded' : dock ? 'is-dock' : peek ? 'is-peek' : ''} ${island.dropHover ? 'is-drop-target' : ''} ${docked && !privateMode && !expanded && !dock && !peek ? 'has-dock' : ''}`}
         initial={false}
         style={{
           position: 'absolute',
@@ -164,7 +194,7 @@ export function IslandShell() {
           top,
           width,
           height,
-          borderRadius: expanded ? 28 : 999,
+          borderRadius: expanded ? 28 : dock ? 24 : 999,
         }}
         transition={
           reduced
@@ -173,10 +203,16 @@ export function IslandShell() {
         }
         onLayoutAnimationStart={trackAnimation}
         onLayoutAnimationComplete={report}
-        role={expanded ? 'region' : 'button'}
-        tabIndex={expanded ? -1 : 0}
+        role={expanded || dock ? 'region' : 'button'}
+        tabIndex={expanded || dock ? -1 : 0}
         aria-label={
-          privateMode ? 'Isle presentation mode' : expanded ? `Isle ${title}` : 'Open Isle'
+          privateMode
+            ? 'Isle presentation mode'
+            : expanded
+              ? `Isle ${title}`
+              : dock
+                ? 'Isle dock'
+                : 'Open Isle'
         }
         onPointerEnter={enter}
         onPointerLeave={exit}
@@ -189,7 +225,7 @@ export function IslandShell() {
             void ipc.setFocusable(true).catch((e) => notify(String(e), true));
         }}
         onClick={(event) => {
-          if (!expanded && !event.altKey) open(island.notice?.tab, true);
+          if (!expanded && !dock && !event.altKey) open(island.notice?.tab, true);
         }}
         onContextMenu={(event) => {
           if (!expanded) {
@@ -240,7 +276,11 @@ export function IslandShell() {
       >
         <Ambient quiet={privateMode} expanded={expanded} />
         <AnimatePresence initial={false} mode="wait">
-          {!expanded ? (
+          {dropping ? (
+            <DockDrop key="drop" reduced={reduced} />
+          ) : dock ? (
+            <DockTray key="dock" reduced={reduced} open={open} />
+          ) : !expanded ? (
             <IdlePill
               key="idle"
               reduced={reduced}
@@ -263,6 +303,9 @@ export function IslandShell() {
             />
           )}
         </AnimatePresence>
+        {docked > 0 && !privateMode && !expanded && !dock && !peek && !dropping && (
+          <DockBadge count={docked} />
+        )}
       </motion.div>
     </main>
   );

@@ -176,7 +176,7 @@ export function Panel({
                 <View />
               </motion.div>
             ) : null}
-            {island.dragging && (
+            {island.dropHover && (
               <div className="drop-overlay">
                 <Icon name="shelf" size={32} />
                 <strong>Drop it here</strong>

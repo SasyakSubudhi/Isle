@@ -3,6 +3,7 @@ import { ipc, nativeAvailable, type TaskbarSlot } from '../lib/ipc';
 import { api } from '../lib/api';
 import type { Download, FeatureSettings, MediaState, ShelfItem, Tab, Timer } from '../lib/types';
 import { task, useApp } from '../app/store';
+import { dockApi } from '../modules/dock/dock';
 
 export interface IsleControls {
   open: (tab?: Tab, focus?: boolean, pin?: boolean) => void;
@@ -70,7 +71,9 @@ export function useIsleEvents(controls: IsleControls) {
       .catch((e) => notify(String(e), true));
     watch<boolean>('island://visibility', setNativeVisible);
     watch<boolean>('island://pointer', (over) => (over ? enter() : exit()));
-    watch<boolean>('shelf://native-drop-hover', (active) => dispatch({ type: 'drag', active }));
+    watch<boolean>('shelf://native-drop-hover', (active) =>
+      dispatch({ type: 'dropHover', active }),
+    );
     watch<string>('island://hotkey', (name) => {
       if (name === 'toggle') {
         if (useApp.getState().island.mode === 'expanded') close();
@@ -152,9 +155,12 @@ export function useIsleEvents(controls: IsleControls) {
       api.onDrop(
         (paths) => {
           open('shelf', false, true);
-          void task(() => api.addFiles(paths)).then(() => refreshShelf());
+          void task(() => api.addFiles(paths)).then((items) => {
+            if (items) void dockApi.add(items.map((i) => i.id)).catch(() => {});
+            return refreshShelf();
+          });
         },
-        (active) => dispatch({ type: 'drag', active }),
+        (active) => dispatch({ type: 'dropHover', active }),
       ),
     );
     for (const stop of stops) void stop.catch((e) => notify(String(e), true));

@@ -1,5 +1,6 @@
 pub mod config;
 pub mod dictionary;
+pub mod dock;
 pub mod shelf;
 #[cfg(test)]
 mod tests;

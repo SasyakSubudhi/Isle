@@ -92,6 +92,7 @@ struct FileDrop {
 impl FileDrop {
     fn hover(&self, point: &POINTL, effect: *mut DROPEFFECT) -> windows::core::Result<()> {
         let valid = self.valid.lock().is_ok_and(|valid| *valid)
+            && !self.manager.dragging_out()
             && self.manager.accepts_drop(point.x, point.y);
         if let Ok(mut previous) = self.hover_state.lock() {
             if *previous != Some(valid) {
@@ -131,9 +132,12 @@ impl IDropTarget_Impl for FileDrop_Impl {
                 error.code().0
             ),
         });
+        let count = files.as_ref().map_or(0, Vec::len);
         if let Ok(mut valid) = self.valid.lock() {
-            *valid = files.is_ok_and(|p| !p.is_empty());
+            *valid = count > 0;
         }
+        // Lets the pill say how many files it is about to dock.
+        let _ = self.app.emit("dock://drag-count", count);
         self.hover(point, effect)
     }
     fn DragOver(
@@ -160,7 +164,9 @@ impl IDropTarget_Impl for FileDrop_Impl {
         effect: *mut DROPEFFECT,
     ) -> windows::core::Result<()> {
         let files = paths(data).unwrap_or_default();
-        let accept = !files.is_empty() && self.manager.accepts_drop(point.x, point.y);
+        let accept = !files.is_empty()
+            && !self.manager.dragging_out()
+            && self.manager.accepts_drop(point.x, point.y);
         diagnostic(format!(
             "drop hwnd={} files={} accepted={accept}",
             self.address,
@@ -183,8 +189,11 @@ impl IDropTarget_Impl for FileDrop_Impl {
             std::thread::spawn(move || match core.shelf_files(files, false) {
                 Ok(items) => {
                     diagnostic(format!("shelf added={}", items.len()));
-                    for item in items {
+                    for item in &items {
                         let _ = app.emit("shelf://item-added", item);
+                    }
+                    if let Err(error) = crate::dock::dock_items(&app, &core, &items) {
+                        let _ = app.emit("app://error", error);
                     }
                 }
                 Err(error) => {

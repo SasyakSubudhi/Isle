@@ -317,6 +317,16 @@ pub async fn shelf_start_drag(
     ids: Vec<String>,
 ) -> Result<(), String> {
     let paths = core.file_paths(&ids)?;
+    drag_files(app, window, paths, |_| {}).await
+}
+/// Starts a native file drag out of Isle and waits for it to end. `finished`
+/// runs on the UI thread with the result before `shelf://drag-finished` fires.
+pub(crate) async fn drag_files(
+    app: AppHandle,
+    window: WebviewWindow,
+    paths: Vec<std::path::PathBuf>,
+    finished: impl Fn(drag::DragResult) + Send + 'static,
+) -> Result<(), String> {
     let manager = app.state::<WindowManager>().inner().clone();
     manager.external_drag(true);
     let (sender, receiver) = std::sync::mpsc::channel();
@@ -328,7 +338,9 @@ pub async fn shelf_start_drag(
             drag::DragItem::Files(paths),
             drag::Image::Raw(include_bytes!("../icons/32x32.png").to_vec()),
             move |result, _| {
-                let _ = handle.emit("shelf://drag-finished", format!("{result:?}"));
+                let label = format!("{result:?}");
+                finished(result);
+                let _ = handle.emit("shelf://drag-finished", label);
             },
             drag::Options::default(),
         )
