@@ -1,10 +1,13 @@
 :root {
   font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
-  color: #f1edff;
+  color: #ececee;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --surface: #0c0914;
-  --muted: #b4aacb;
-  --accent: #c6abff;
+  --surface: #0d0d0f;
+  --muted: #8e8e95;
+  --accent: #f4f4f5;
+  --signal: #8ab4ff;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-soft: cubic-bezier(.4, 0, .2, 1);
 }

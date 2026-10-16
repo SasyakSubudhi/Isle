@@ -1,31 +1,31 @@
 ---
 name: Isle
-description: Cosmic desktop capsule and compact Operate panel
+description: Minimal monochrome desktop capsule and compact Operate panel
 colors:
-  surface: "#0c0914"
-  text: "#f1edff"
-  muted: "#b4aacb"
-  accent: "#c6abff"
-  stars: "#eddcff"
-  ready: "#ead6ff"
-  selection: "#c6abff40"
+  surface: "#0d0d0f"
+  text: "#ececee"
+  muted: "#8e8e95"
+  accent: "#f4f4f5"
+  signal: "#8ab4ff"
+  selection: "#8ab4ff40"
   selection-text: "#fff"
   canvas: "transparent"
-  control: "#ffffff0c"
-  control-hover: "#ffffff17"
-  line: "#e8d4ff17"
-  primary-ink: "#221332"
-  danger: "#f6a8b6"
-  toast: "#302340"
-  error-surface: "#452334"
-  error-text: "#ffe0e7"
-  light-surface: "#faf7ff"
-  light-text: "#291c3c"
-  light-muted: "#675a76"
-  light-accent: "#7441be"
-  light-control: "#49256e09"
-  light-control-hover: "#49256e13"
-  light-line: "#49256e1b"
+  control: "#ffffff0a"
+  control-hover: "#ffffff14"
+  line: "#ffffff12"
+  primary-ink: "#0d0d0f"
+  danger: "#ff9e9e"
+  toast: "#1c1c1f"
+  error-surface: "#2a1719"
+  error-text: "#ffd9d9"
+  light-surface: "#fafafa"
+  light-text: "#18181b"
+  light-muted: "#6b6b73"
+  light-accent: "#18181b"
+  light-signal: "#2f6fde"
+  light-control: "#0000000a"
+  light-control-hover: "#00000012"
+  light-line: "#00000014"
   light-danger: "#a62142"
 typography:
   label:
@@ -109,17 +109,19 @@ components:
 
 ## Overview
 
-**Creative North Star: "Cosmic"**
+**Creative North Star: "Minimal" (2026-10-16, supersedes Cosmic)**
 
-The user chose a deeper violet capsule with luminous particles and stronger glow. The current HTML/CSS interface in a transparent native Tauri window expresses this through a local vector emblem, drifting nebula gradients, breathing stars, a floating planet, an occasional comet and a slowly rotating readiness orbit. Pointer hover springs the emblem upward; a press subtly scales the inner content. The rounded capsule and soft highlight/shadow remain authoritative.
+The user asked for a minimal idle pill with many small, quiet animations. The capsule is near-black (light: near-white) with a 1px hairline edge instead of glow. Idle content is a single status dot inside a softly breathing halo plus the lowercase wordmark, centered. Ambient motion is CSS-only: a faint sheen crosses the pill about every 11 s and a hairline edge light drifts along the top. Hover brightens the edge and wordmark, widens the dot into a short bar and draws a 10px hint line. State changes only the rhythm: the halo breathes faster for timer, media and notices, and notices tint the dot with the single signal blue.
 
-This documents current source styling and handlers, not M1 acceptance. The earlier blue static M0 capsule and `docs/evidence/m0-native.png` are historical references, no longer the current visual system. The expanded shell and module views are now implemented in source. Layout uses a spring between idle, peek and expanded dimensions; no fluid simulation is implemented. Native manual acceptance remains unverified; source documentation is not a whole-app verification claim. `docs/evidence/glitches/fixed-native.jpg` records the visual-fix capture, and a synthetic browser layout check confirmed that a download proposal and compact empty paragraph fit the body. Neither establishes completed native transfer acceptance.
+Expanded mode keeps the same monochrome surface. White is the primary action color; signal blue (#8ab4ff, light #2f6fde) is reserved for progress, focus rings and completed cycles. Tab changes fade up 6px, list items and settings groups stagger in, tiles lift 1px on hover, buttons press to 96%, toasts spring in and timeline bars grow from the baseline. All loops pause when hidden or when reduced motion is on, and entrances are skipped under `prefers-reduced-motion`.
 
 **Key Characteristics:**
-- Deep violet-black capsule with pale lavender text.
-- Authored orbital SVG emblem and clipped local sky decoration.
-- Soft luminous depth with ambient CSS animation and focused Framer Motion responses.
+- Calm monochrome capsule with a hairline edge; one signal color for active state.
+- `IsleMark` (dot plus breathing halo) replaces the Cosmic emblem; `Ambient` replaces the sky.
+- Many small, slow motions; nothing loops faster than 1.1 s except the notice halo.
 - Live reduced-motion support and paused animation while hidden.
+
+The Cosmic sections below are historical and no longer describe the current source.
 
 ## Colors
 
