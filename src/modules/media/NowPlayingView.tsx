@@ -3,10 +3,24 @@ import { api, asset, formatClock } from '../../lib/api';
 import { task, useApp } from '../../app/store';
 import { Empty, IconButton } from '../../ui/primitives';
 import { Icon } from '../../ui/Icon';
+import { useReducedMotion } from '../../lib/hooks/useReducedMotion';
+import { ReactiveBars } from '../../island/live/ReactiveBars';
 export function NowPlayingView() {
   const media = useApp((s) => s.data!.media);
+  const systemReduced = useReducedMotion();
+  const reduced = useApp((s) => !!s.data?.settings.reduced_motion) || systemReduced;
   const [seek, setSeek] = useState(media.position_seconds);
+  const [dragging, setDragging] = useState(false);
   useEffect(() => setSeek(media.position_seconds), [media.position_seconds, media.title]);
+  // Windows reports position every couple of seconds; count up in between.
+  useEffect(() => {
+    if (!media.playing || dragging) return;
+    const interval = setInterval(
+      () => setSeek((s) => Math.min(s + 1, media.duration_seconds || s + 1)),
+      1000,
+    );
+    return () => clearInterval(interval);
+  }, [media.playing, media.duration_seconds, dragging]);
   if (!media.available)
     return (
       <Empty icon="media" title="Your next soundtrack goes here">
@@ -16,7 +30,10 @@ export function NowPlayingView() {
       </Empty>
     );
   return (
-    <section className="feature media-view">
+    <section className={`feature media-view ${media.accent ? 'has-accent' : ''}`}>
+      {media.artwork ? (
+        <img className="media-backdrop" src={asset(media.artwork)} alt="" aria-hidden="true" />
+      ) : null}
       <div className="now-playing">
         <div className="album-art">
           {media.artwork ? (
@@ -29,14 +46,18 @@ export function NowPlayingView() {
           <small>{media.playing ? 'NOW PLAYING' : 'PAUSED'}</small>
           <h2>{media.title || 'Untitled track'}</h2>
           <p>{media.artist || media.source}</p>
-          <div className={`waveform ${media.playing ? 'playing' : ''}`} aria-hidden="true">
-            {Array.from({ length: 9 }, (_, i) => (
-              <span
-                key={i}
-                style={{ animationDelay: `${i * -0.13}s`, height: `${8 + ((i * 7) % 20)}px` }}
-              />
-            ))}
-          </div>
+          {media.playing && !reduced ? (
+            <ReactiveBars animate />
+          ) : (
+            <div className={`waveform ${media.playing ? 'playing' : ''}`} aria-hidden="true">
+              {Array.from({ length: 9 }, (_, i) => (
+                <span
+                  key={i}
+                  style={{ animationDelay: `${i * -0.13}s`, height: `${8 + ((i * 7) % 20)}px` }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div className="seek">
@@ -49,7 +70,11 @@ export function NowPlayingView() {
           disabled={!media.duration_seconds}
           aria-label="Playback position"
           onChange={(e) => setSeek(Number(e.target.value))}
-          onPointerUp={() => void task(() => api.media('seek', seek))}
+          onPointerDown={() => setDragging(true)}
+          onPointerUp={() => {
+            setDragging(false);
+            void task(() => api.media('seek', seek));
+          }}
           onKeyUp={(e) => {
             if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key))
               void task(() => api.media('seek', seek));

@@ -1,0 +1,270 @@
+/* Live activities and now playing. Monochrome by default; colour only where it
+   means something: the privacy dot, battery state, download progress in signal
+   blue, and the album accent while music plays. */
+
+.island-pill {
+  --media-ink: var(--media-accent, #e4e4e7);
+  --live-warn: #f5b84a;
+  --live-alert: #ff6b5e;
+}
+[data-theme='light'] .island-pill {
+  --media-ink: color-mix(in oklab, var(--media-accent, #27272a) 62%, black);
+  --live-warn: #b7791f;
+  --live-alert: #d93b2f;
+}
+
+.live-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  color: #d4d4d8;
+}
+[data-theme='light'] .live-label {
+  color: #3f3f46;
+}
+.live-label.is-critical {
+  color: var(--live-alert);
+}
+.live-detail {
+  flex: none;
+  font-size: 11px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* Privacy dot: camera, microphone, call or screen capture in use */
+.live-dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--live-alert);
+}
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid var(--live-alert);
+  opacity: 0;
+  animation: live-ping 2.4s var(--ease-soft) infinite;
+}
+
+/* Download: a bobbing arrow and an indeterminate signal-blue bar, since
+   browsers don't say how large the file will be. */
+.live-arrow {
+  fill: none;
+  stroke: #e4e4e7;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: live-bob 1.6s var(--ease-soft) infinite;
+}
+[data-theme='light'] .live-arrow {
+  stroke: #27272a;
+}
+.live-progress {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 3px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--signal) 22%, transparent);
+}
+.live-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 35%;
+  border-radius: inherit;
+  background: var(--signal);
+  animation: live-slide 1.5s var(--ease-soft) infinite;
+}
+
+/* Battery */
+.live-battery {
+  flex: none;
+  overflow: visible;
+}
+.live-battery-case {
+  fill: none;
+  stroke: #a1a1aa;
+  stroke-width: 1;
+}
+.live-battery-tip {
+  fill: #a1a1aa;
+}
+.live-battery-fill {
+  fill: #e4e4e7;
+}
+.live-battery-bolt {
+  fill: var(--surface);
+}
+[data-theme='light'] .live-battery-fill {
+  fill: #27272a;
+}
+[data-theme='light'] .live-battery-bolt {
+  fill: #fff;
+}
+.island-pill:has(.is-power) .live-battery-fill {
+  fill: var(--signal);
+}
+.island-pill:has(.is-battery-low) .live-battery-fill {
+  fill: var(--live-warn);
+}
+.island-pill:has(.is-critical) .live-battery-fill {
+  fill: var(--live-alert);
+}
+
+/* Audio-reactive wave: replaces the idle waves while music plays */
+.island-pill.has-audio-wave .ambient-waves {
+  display: none;
+}
+.audio-wave {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.audio-wave svg {
+  width: 100%;
+  height: 100%;
+}
+.audio-wave path {
+  vector-effect: non-scaling-stroke;
+}
+.audio-wave-line {
+  fill: none;
+  stroke: var(--media-ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  opacity: 0.5;
+}
+.audio-wave-back {
+  fill: none;
+  stroke: var(--media-ink);
+  stroke-width: 1;
+  opacity: 0.22;
+}
+.audio-wave-fill {
+  fill: color-mix(in oklab, var(--media-ink) 9%, transparent);
+}
+
+/* Album accent on the pill: a faint glow from the artwork side and a tinted edge */
+.island-pill[data-accent]:not(.is-expanded) {
+  background-image: radial-gradient(
+    120% 160% at 0% 50%,
+    color-mix(in oklab, var(--media-accent) 20%, transparent),
+    transparent 62%
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--media-accent) 26%, transparent),
+    inset 0 1px 0 #ffffff0d,
+    0 8px 20px -6px #00000080;
+}
+[data-theme='light'] .island-pill[data-accent]:not(.is-expanded) {
+  background-image: radial-gradient(
+    120% 160% at 0% 50%,
+    color-mix(in oklab, var(--media-accent) 28%, transparent),
+    transparent 62%
+  );
+}
+
+/* Now Playing view */
+.media-view {
+  position: relative;
+  isolation: isolate;
+}
+.media-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(34px) saturate(1.3);
+  opacity: 0.2;
+  transform: scale(1.15);
+  clip-path: inset(0 round 18px);
+  pointer-events: none;
+}
+[data-theme='light'] .media-backdrop {
+  opacity: 0.16;
+}
+.media-view.has-accent .album-art {
+  box-shadow: 0 12px 28px -12px color-mix(in oklab, var(--media-accent) 80%, transparent);
+}
+.media-view.has-accent .waveform {
+  color: var(--media-ink);
+}
+.media-view.has-accent input[type='range'] {
+  accent-color: var(--media-ink);
+}
+.island-shell .media-view.has-accent .play-button {
+  background: var(--media-ink);
+  color: var(--surface);
+}
+[data-theme='light'] .island-shell .media-view.has-accent .play-button {
+  color: #fff;
+}
+.reactive-bars span {
+  transition: none;
+  will-change: transform;
+}
+
+@keyframes live-ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+@keyframes live-bob {
+  0%,
+  100% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(1.5px);
+  }
+}
+@keyframes live-slide {
+  from {
+    left: -35%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+.island-canvas[data-motion-paused='true'] .live-dot::after,
+.island-canvas[data-motion-paused='true'] .live-arrow,
+.island-canvas[data-motion-paused='true'] .live-progress::after {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot::after,
+  .live-arrow {
+    animation: none;
+  }
+  .live-progress::after {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.6;
+  }
+}

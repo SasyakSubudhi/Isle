@@ -2,6 +2,7 @@
 
 use tauri::Manager;
 
+mod activity;
 mod clip_actions;
 mod clipboard;
 mod commands;
@@ -75,7 +76,8 @@ fn main() {
             commands::bootstrap,commands::shelf_list,commands::shelf_add_files,commands::shelf_add_text,commands::shelf_paste,commands::shelf_remove,commands::shelf_update,commands::shelf_copy,commands::shelf_start_drag,dock::dock_list,dock::dock_add,dock::dock_remove,dock::dock_clear,dock::dock_start_drag,commands::shelf_open,commands::shelf_clean,
             commands::stacks_list,commands::stack_add,commands::stack_remove,commands::notes_list,commands::note_save,commands::note_remove,commands::dictionary_lookup,commands::dictionary_save,commands::usage_summary,commands::usage_clear,commands::usage_snooze,commands::timer_action,commands::media_command,commands::chrome_open,commands::settings_set,commands::settings_patch,commands::download_action,commands::capture_start,commands::app_quit,
             context::context_current,widgets::habits_list,widgets::habits_save,widgets::weather_get,
-            clip_actions::clip_write_text,clip_actions::clip_open_url])
+            clip_actions::clip_write_text,clip_actions::clip_open_url,
+            activity::activity_get,activity::audio_meter])
         .on_menu_event(|app,event| commands::handle_menu(app,event.id().as_ref()))
         .run(tauri::generate_context!())
         .expect("Isle could not start");

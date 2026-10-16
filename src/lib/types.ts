@@ -75,6 +75,8 @@ export interface MediaState {
   position_seconds: number;
   duration_seconds: number;
   artwork: string | null;
+  /** `#rrggbb` taken from the artwork; absent for grey art or older builds. */
+  accent?: string | null;
   error: string | null;
 }
 export interface Download {

@@ -13,6 +13,8 @@ import { useIsleEvents } from './useIsleEvents';
 import { DockBadge, DockDrop, DockTray } from '../modules/dock/DockViews';
 import { useDock, useDockEvents } from '../modules/dock/dock';
 import { useActivityFeed } from '../modules/context/ContextChip';
+import { AudioWave } from './live/AudioWave';
+import { useLiveActivity } from './live/useLiveActivity';
 
 export function IslandShell() {
   const { island, data, dispatch, notify, refreshShelf } = useApp();
@@ -33,6 +35,15 @@ export function IslandShell() {
   const dock = island.mode === 'dock' && !privateMode && docked > 0;
   const dropping = island.dropHover && !expanded;
   const paused = !pageVisible || !nativeVisible;
+  const mediaPlaying = !privateMode && !!data?.media.playing;
+  const { live, now } = useLiveActivity({
+    privateMode,
+    timerActive: data?.timer.status === 'running' || data?.timer.status === 'paused',
+    mediaPlaying,
+    animate: !reduced && !paused,
+  });
+  const audioWave = mediaPlaying && !reduced && !expanded;
+  const accent = mediaPlaying ? data?.media.accent : null;
   const leave = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hover = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hitFrame = useRef<number | null>(null);
@@ -160,7 +171,7 @@ export function IslandShell() {
           ? 324
           : peek
             ? 292
-            : pillWidth,
+            : Math.max(pillWidth, live ? 236 : mediaPlaying ? 200 : 0),
     height = expanded ? 324 : dropping ? 46 : dock ? 64 : peek ? 48 : 36;
   const frameWidth = slot ? 560 : window.innerWidth,
     frameHeight = slot ? 360 : window.innerHeight,
@@ -189,7 +200,8 @@ export function IslandShell() {
       <motion.div
         ref={shell}
         layout
-        className={`island-pill island-shell ${expanded ? 'is-expanded' : dock ? 'is-dock' : peek ? 'is-peek' : ''} ${island.dropHover ? 'is-drop-target' : ''} ${docked && !privateMode && !expanded && !dock && !peek ? 'has-dock' : ''}`}
+        className={`island-pill island-shell ${expanded ? 'is-expanded' : dock ? 'is-dock' : peek ? 'is-peek' : ''} ${island.dropHover ? 'is-drop-target' : ''} ${docked && !privateMode && !expanded && !dock && !peek ? 'has-dock' : ''} ${audioWave ? 'has-audio-wave' : ''}`}
+        data-accent={accent ? '' : undefined}
         initial={false}
         style={{
           position: 'absolute',
@@ -198,6 +210,7 @@ export function IslandShell() {
           width,
           height,
           borderRadius: expanded ? 28 : dock ? 24 : 999,
+          ...(accent ? { '--media-accent': accent } : {}),
         }}
         transition={
           reduced
@@ -278,6 +291,7 @@ export function IslandShell() {
         }}
       >
         <Ambient quiet={privateMode} expanded={expanded} />
+        {audioWave ? <AudioWave paused={paused} /> : null}
         <AnimatePresence initial={false} mode="wait">
           {dropping ? (
             <DockDrop key="drop" reduced={reduced} />
@@ -292,6 +306,9 @@ export function IslandShell() {
               peek={peek}
               privateMode={privateMode}
               activeTimer={activeTimer}
+              live={live}
+              now={now}
+              audioWave={audioWave}
               close={close}
             />
           ) : (
