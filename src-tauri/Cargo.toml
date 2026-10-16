@@ -1,6 +1,6 @@
 [package]
 name = "isle"
-version = "0.1.0"
+version = "0.1.1"
 description = "A small, local-first island for the Windows taskbar"
 edition = "2021"
 
@@ -8,22 +8,25 @@ edition = "2021"
 tauri-build = { version = "=2.7.3", features = [] }
 
 [dependencies]
-tauri = { version = "=2.12.4", features = ["tray-icon", "image-png"] }
+tauri = { version = "=2.12.4", features = ["tray-icon", "image-png", "protocol-asset"] }
 tauri-plugin-global-shortcut = "=2.4.1"
 tauri-plugin-autostart = "=2.7.0"
 rusqlite = { version = "=0.40.2", features = ["bundled"] }
 notify = "=8.2.0"
-image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg"] }
+image = { version = "=0.25.10", default-features = false, features = ["png", "jpeg", "bmp", "gif", "webp"] }
+chrono = { version = "=0.4.45", features = ["serde"] }
 reqwest = { version = "=0.13.5", default-features = false, features = ["json", "rustls"] }
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.154"
 drag = "=2.1.1"
+windows-core = "=0.62.2"
 windows = { version = "=0.62.2", features = [
   "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Accessibility",
   "Win32_UI_Shell", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_HiDpi",
   "Win32_System_Com", "Win32_System_Ole", "Win32_System_DataExchange",
   "Win32_System_Memory", "Win32_System_Threading", "Win32_System_RemoteDesktop",
-  "Win32_Graphics_Gdi", "Media_Control", "Storage_Streams", "Foundation"
+  "Win32_Graphics_Gdi", "Win32_System_SystemInformation", "Win32_Storage_FileSystem",
+  "Win32_System_WinRT", "Win32_System_SystemServices", "Media_Control", "Storage_Streams", "Foundation"
 ] }
 
 [profile.release]

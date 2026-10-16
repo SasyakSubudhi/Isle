@@ -9,6 +9,9 @@ The primary workflow is download/copy/capture → shelf → native drag or paste
 another app. The shell must remain quiet, avoid stealing focus and allow clicks
 through its transparent canvas. Visual authority is the user's original brief:
 near-black capsule, soft highlight/shadow, continuous spring morph and fluid glow.
+The user subsequently chose a Cosmic refinement: deep violet, luminous particles,
+an orbital emblem and a stronger violet glow. This is the current visual authority;
+the original blue mark remains historical M0 evidence only.
 
 The first release includes Shelf/history/cleanup/stacks, notes, snipping capture,
 screen time and nudges, dictionary, GSMTC media, Chrome profile shortcuts,

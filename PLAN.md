@@ -19,6 +19,13 @@ Do not advance past a failed or unavailable mandatory gate. Log verification
 honestly in MILESTONES.md. Commit each passed milestone. Every milestone must
 remain runnable with `npm run tauri dev`.
 
+### Implementation continuation (2026-10-15)
+
+After seeing the shell, the user asked where the functionality was and explicitly
+instructed “IMPLEMENT THIS NOW.” Implement the functional modules now while
+retaining all unavailable native acceptance checks as unverified. This continuation
+does not establish a passed gate or waive the original milestone commit rule.
+
 ## Agreed defaults
 
 Clipboard history is opt-in; explicit paste/drop/capture works without it.
@@ -31,3 +38,10 @@ App nudges once per app per day. Presentation mode shows neutral pill/timer and
 suppresses private previews; timers and usage tracking continue.
 Idle fluid glow with reduced-motion support. No telemetry/cloud sync.
 Codex quota and in-Isle grammar checking are deferred.
+
+## Visual amendment (2026-10-15)
+
+User requested a cooler design and chose Cosmic: deeper violet, luminous
+particles and a more dramatic glow. Apply the cosmic idle treatment during M1;
+carry the approved identity into the expanded shell in M2. Other milestone gates
+and the module order remain unchanged.

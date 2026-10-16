@@ -1,5 +1,8 @@
 node_modules/
 dist/
+release/*.exe
+.tools/
+docs/evidence/glitches/frame-*.jpg
 src-tauri/target/
 src-tauri/gen/
 *.log

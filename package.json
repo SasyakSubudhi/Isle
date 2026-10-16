@@ -1,11 +1,12 @@
 {
   "name": "isle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
+    "test": "node --test tests/*.test.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "tauri": "node scripts/tauri.mjs"
   },

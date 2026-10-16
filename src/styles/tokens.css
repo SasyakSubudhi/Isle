@@ -1,10 +1,10 @@
 :root {
   font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
-  color: #f5f5f7;
+  color: #f1edff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --surface: rgba(10, 10, 12, .97);
-  --muted: #aaaab5;
-  --accent: #a5c7ff;
+  --surface: #0c0914;
+  --muted: #b4aacb;
+  --accent: #c6abff;
 }

@@ -5,10 +5,34 @@
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
 body { user-select: none; }
-::selection { background: #a5c7ff40; color: #fff; }
+::selection { background: #c6abff40; color: #fff; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.island-canvas { width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; }
-.island-pill { width: 136px; height: 36px; display: flex; align-items: center; gap: 12px; padding: 0 17px; background: var(--surface); border-radius: 999px; box-shadow: inset 0 1px 0 #ffffff14, 0 6px 14px #00000035; }
-.island-pill svg { color: #a5c7ff; }
-.island-pill span { font-size: 13px; font-weight: 500; letter-spacing: .03em; }
-.ready-dot { margin-left: auto; width: 4px; height: 4px; border-radius: 50%; background: #a5c7ff; }
+.island-canvas { position: relative; width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 12px; }
+.island-pill { position: relative; isolation: isolate; width: 148px; height: 36px; display: flex; align-items: center; gap: 11px; padding: 0 15px; background: var(--surface); border-radius: 999px; box-shadow: inset 0 1px 0 #f0dcff26, inset 0 -1px 0 #9e71ee14, 0 6px 14px #0000004d, 0 0 22px #864ddd29; cursor: default; }
+.island-pill::after { content: ''; pointer-events: none; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg,#e9d6ff0d,transparent 35%,transparent 65%,#ad80f20a); }
+.cosmic-mark { position: relative; z-index: 1; flex: none; filter: drop-shadow(0 0 5px #c9a1ff55); }
+.island-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 11px; width: 100%; height: 100%; transform-origin: center; }
+.cosmic-emblem, .cosmic-float { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 23px; height: 23px; }
+.cosmic-float { animation: planet-float 3.8s ease-in-out infinite; }
+.isle-wordmark { position: relative; z-index: 1; font-size: 13px; line-height: 1; font-weight: 600; letter-spacing: -.02em; text-shadow: 0 1px 5px #100621; }
+.cosmic-sky { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.nebula { position: absolute; width: 130px; height: 52px; border-radius: 50%; will-change: transform; }
+.nebula-near { left: -25px; top: 12px; background: radial-gradient(ellipse,#a36aef70 0%,#7c3fbb2e 38%,transparent 70%); animation: nebula-flow 9s ease-in-out infinite alternate; }
+.nebula-far { right: -45px; top: -31px; background: radial-gradient(ellipse,#e6adff60 0%,#9864ff35 36%,transparent 70%); animation: nebula-flow 12s ease-in-out -5s infinite alternate-reverse; }
+.cosmic-stars { position: absolute; inset: 0; width: 100%; height: 100%; fill: #eddcff; color: #eddcff; opacity: .65; animation: star-breathe 5s ease-in-out infinite alternate; }
+.orbit-trail { position: absolute; left: 28%; top: -27px; width: 135px; height: 62px; border: 1px solid #d5b4ff1a; border-radius: 50%; transform: rotate(-16deg); }
+.cosmic-comet { position: absolute; left: 0; top: 10px; width: 28px; height: 1px; border-radius: 50%; background: linear-gradient(90deg,transparent,#cba4ff80,#fff0ff); box-shadow: 1px 0 4px #e6c2ff66; opacity: 0; animation: comet-pass 6.8s ease-out 1.2s infinite; }
+.ready-signal { position: relative; z-index: 1; margin-left: auto; width: 12px; height: 12px; display: grid; place-items: center; }
+.ready-dot { width: 3px; height: 3px; border-radius: 50%; background: #ead6ff; box-shadow: 0 0 6px #c699ff99; }
+.ready-orbit { position: absolute; inset: 0; border-radius: 50%; border: 1px solid #ceb0ff29; border-top-color: #dfc5ff99; animation: orbit-turn 10s linear infinite; }
+@keyframes nebula-flow { from { transform: translate3d(-6px,0,0) rotate(-10deg) scale(.9); } to { transform: translate3d(24px,-8px,0) rotate(18deg) scale(1.15); } }
+@keyframes star-breathe { from { opacity: .3; } to { opacity: .8; } }
+@keyframes orbit-turn { to { transform: rotate(360deg); } }
+@keyframes planet-float { 0%,100% { transform: translateY(1px) rotate(-3deg); } 50% { transform: translateY(-1.5px) rotate(3deg); } }
+@keyframes comet-pass { 0% { transform: translate3d(-32px,14px,0) rotate(-12deg); opacity: 0; } 5% { opacity: .85; } 24% { transform: translate3d(164px,-12px,0) rotate(-12deg); opacity: 0; } 100% { transform: translate3d(164px,-12px,0) rotate(-12deg); opacity: 0; } }
+.island-canvas[data-motion-paused="true"] .nebula,
+.island-canvas[data-motion-paused="true"] .cosmic-stars,
+.island-canvas[data-motion-paused="true"] .ready-orbit,
+.island-canvas[data-motion-paused="true"] .cosmic-float,
+.island-canvas[data-motion-paused="true"] .cosmic-comet { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .nebula, .cosmic-stars, .ready-orbit, .cosmic-float, .cosmic-comet { animation: none; will-change: auto; } .cosmic-comet { opacity: 0; } .cosmic-emblem, .island-content { transform: none !important; } }
