@@ -3,7 +3,6 @@
 [data-theme="light"] .island-pill { box-shadow:inset 0 0 0 1px #0000001a, inset 0 1px 0 #ffffff, 0 8px 20px -8px #0000004d; }
 [data-theme="light"] .island-pill:not(.is-expanded):hover { box-shadow:inset 0 0 0 1px #0000002b, inset 0 1px 0 #ffffff, 0 10px 24px -8px #00000059; }
 [data-theme="light"] .isle-wordmark { color:#3f3f46; }
-[data-theme="light"] .island-pill:hover .isle-wordmark { color:#09090b; }
 [data-theme="light"] .isle-mark-dot { background:#27272a; }
 [data-theme="light"] .isle-mark-halo { border-color:#0000002e; }
 [data-theme="light"] .idle-tide span { background:#27272a; }
