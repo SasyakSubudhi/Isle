@@ -145,6 +145,9 @@ pub fn start(app: AppHandle, core: Core) -> Result<(), String> {
     let meter = crate::activity::audio::Meter::default();
     app.manage(meter.clone());
     crate::activity::audio::start(app.clone(), meter);
+    let ai = crate::ai_usage::AiState::default();
+    app.manage(ai.clone());
+    crate::ai_usage::start(app.clone(), core.clone(), ai);
     std::thread::spawn(move || {
         let mut expire = Instant::now();
         loop {

@@ -4,7 +4,15 @@ use std::{collections::BTreeMap, fs};
 /// Pill looks. `tide` is the original monochrome wave and the default.
 pub const PILL_THEMES: [&str; 4] = ["tide", "still", "evergreen", "outline"];
 /// Tabs that can be hidden from the panel's tab bar. Shelf always stays.
-pub const HIDEABLE_TABS: [&str; 6] = ["usage", "dictionary", "focus", "media", "notes", "widgets"];
+pub const HIDEABLE_TABS: [&str; 7] = [
+    "usage",
+    "ai",
+    "dictionary",
+    "focus",
+    "media",
+    "notes",
+    "widgets",
+];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]

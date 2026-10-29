@@ -31,6 +31,7 @@ Settings, pauses tracking, controls presentation mode and quits the app.
 - **Clipboard history:** open History and explicitly enable capture. Explicit
   paste and screenshots work with background history off.
 - **Screen time:** view real foreground app time today or across seven days.
+- **AI usage:** Claude Code tokens in the current five-hour window with its reset time, and the exact Codex (ChatGPT plan) limits, read from those tools' logs on this PC. Nothing is sent anywhere.
   Select an app for its timeline, daily limit or exclusion. Idle, lock and sleep
   are excluded; pause tracking in Settings or the tray.
 - **Dictionary:** look up English words, play available pronunciation and save
