@@ -15,7 +15,6 @@ import type {
   BackupInfo,
   RestoreSummary,
   UpdateStatus,
-  AiUsage,
 } from './types';
 
 function call<T>(command: string, args?: Record<string, unknown>): Promise<T> {
@@ -81,7 +80,6 @@ export const api = {
   backupFolder: () => call<void>('backup_open_folder'),
   updateCheck: () => call<UpdateStatus>('update_check'),
   updateInstall: () => call<void>('update_install'),
-  aiUsage: (fresh = false) => call<AiUsage>('ai_usage', { fresh }),
   on: <T>(event: string, handler: (payload: T) => void) =>
     listen<T>(event, (e) => handler(e.payload)),
   onDrop: (handler: (paths: string[]) => void, onHover: (active: boolean) => void) =>

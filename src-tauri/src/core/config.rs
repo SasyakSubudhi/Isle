@@ -4,15 +4,7 @@ use std::{collections::BTreeMap, fs};
 /// Pill looks. `tide` is the original monochrome wave and the default.
 pub const PILL_THEMES: [&str; 4] = ["tide", "still", "evergreen", "outline"];
 /// Tabs that can be hidden from the panel's tab bar. Shelf always stays.
-pub const HIDEABLE_TABS: [&str; 7] = [
-    "usage",
-    "ai",
-    "dictionary",
-    "focus",
-    "media",
-    "notes",
-    "widgets",
-];
+pub const HIDEABLE_TABS: [&str; 6] = ["usage", "dictionary", "focus", "media", "notes", "widgets"];
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -209,6 +201,10 @@ pub fn load() -> Result<FeatureSettings, String> {
             settings.hotkeys.insert(name, combo);
         }
     }
+    // Forget tabs that no longer exist, so an old hidden tab can't block loading.
+    settings
+        .hidden_tabs
+        .retain(|t| HIDEABLE_TABS.contains(&t.as_str()));
     FeatureSettings::validate(&settings)?;
     Ok(settings)
 }

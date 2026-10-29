@@ -141,7 +141,7 @@ export interface DictionaryResult {
   }[];
 }
 export type Tab =
-  'shelf' | 'usage' | 'ai' | 'dictionary' | 'focus' | 'media' | 'notes' | 'widgets' | 'settings';
+  'shelf' | 'usage' | 'dictionary' | 'focus' | 'media' | 'notes' | 'widgets' | 'settings';
 export interface BackupInfo {
   name: string;
   created_at: number;
@@ -156,27 +156,4 @@ export interface UpdateStatus {
   current: string;
   available: string | null;
   notes: string | null;
-}
-export interface AiUsage {
-  checked_at: number;
-  claude: {
-    last_used: number | null;
-    window: {
-      start: number;
-      end: number;
-      tokens: number;
-      messages: number;
-      exact_reset: boolean;
-    } | null;
-    today_tokens: number;
-    week_tokens: number;
-    days: number[];
-    limit: { kind: string; resets_at: number; rejected: boolean; at: number } | null;
-  } | null;
-  codex: {
-    plan: string | null;
-    updated_at: number;
-    windows: { minutes: number; used_percent: number; resets_at: number }[];
-    limit_reached: boolean;
-  } | null;
 }

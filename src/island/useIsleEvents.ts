@@ -161,9 +161,6 @@ export function useIsleEvents(controls: IsleControls) {
           },
         });
     });
-    watch<string>('ai://warning', (title) => {
-      if (!quiet()) dispatch({ type: 'peek', notice: { title, tab: 'ai' } });
-    });
     watch<boolean>('capture://state', (value) => useApp.setState({ capturing: value }));
     watch('shelf://drag-finished', () => dispatch({ type: 'drag', active: false }));
     stops.push(

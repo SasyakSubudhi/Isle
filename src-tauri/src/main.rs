@@ -3,7 +3,6 @@
 use tauri::Manager;
 
 mod activity;
-mod ai_usage;
 mod backup;
 mod clip_actions;
 mod clipboard;
@@ -82,7 +81,7 @@ fn main() {
             context::context_current,widgets::habits_list,widgets::habits_save,widgets::weather_get,
             clip_actions::clip_write_text,clip_actions::clip_open_url,
             activity::activity_get,activity::audio_meter,
-            ai_usage::ai_usage,backup::backup_create,backup::backup_list,backup::backup_restore,backup::backup_open_folder,
+            backup::backup_create,backup::backup_list,backup::backup_restore,backup::backup_open_folder,
             updater::update_check,updater::update_install])
         .on_menu_event(|app,event| commands::handle_menu(app,event.id().as_ref()))
         .run(tauri::generate_context!())
