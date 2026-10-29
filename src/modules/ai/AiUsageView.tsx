@@ -76,6 +76,9 @@ function ClaudeCard({ claude, now, action }: { claude: Claude; now: number; acti
 }
 
 function CodexCard({ codex, now, action }: { codex: Codex; now: number; action?: ReactNode }) {
+  // Codex only writes its limits here during a session on this PC. Use on the
+  // web, in the cloud or on another device moves the real numbers on unseen.
+  const stale = now - codex.updated_at > 30 * 60_000;
   return (
     <article className="widget-card ai-card">
       <header>
@@ -93,7 +96,11 @@ function CodexCard({ codex, now, action }: { codex: Codex; now: number; action?:
             <p className="ai-line">
               <span>{windowName(w.minutes)} limit</span>
               <span className="spacer" />
-              <strong>{Math.round(100 - used)}% left</strong>
+              <strong>
+                {done && stale
+                  ? 'Reset'
+                  : `${stale ? 'At most ' : ''}${Math.round(100 - used)}% left`}
+              </strong>
             </p>
             <Meter
               value={used / 100}
@@ -101,14 +108,18 @@ function CodexCard({ codex, now, action }: { codex: Codex; now: number; action?:
             />
             <p className="ai-line ai-sub">
               {done
-                ? 'Reset, fully available'
+                ? stale
+                  ? `Reset ${resetTime(w.resets_at, now)}; use since then isn’t known yet`
+                  : 'Reset, fully available'
                 : `${Math.round(used)}% used · resets ${resetTime(w.resets_at, now)} (${until(w.resets_at, now)})`}
             </p>
           </div>
         );
       })}
       <p className="widget-hint ai-note">
-        Exact, from Codex {ago(codex.updated_at, now)}. App or website chats aren’t included.
+        {stale
+          ? `Last reported by Codex on this PC ${ago(codex.updated_at, now)}. Use elsewhere since then (web, cloud tasks, another device) shows after your next Codex session here.`
+          : `Exact, from Codex ${ago(codex.updated_at, now)}. Use elsewhere (web, cloud tasks, another device) shows after your next Codex session here.`}
       </p>
     </article>
   );
